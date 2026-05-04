@@ -462,7 +462,7 @@ const PRESETS={
   SPX:{long:{'Maan/Zon':0.4,'Mercurius/Zon':0.3,'Venus/Zon':0.6,'Mars/Zon':0.9,'Jupiter/Zon':1.0,'Jupiter/Saturn':1.5,'Saturn/Zon':1.1,'Uranus/Zon':0.4,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.4,'Mercurius/Zon':1.0,'Venus/Zon':0.5,'Mars/Zon':1.2,'Jupiter/Zon':0.5,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.1},note:'SPX: Jupiter/Saturn (Merriman). Mars voor korte volatiliteit.'},
   DXY:{long:{'Maan/Zon':0.3,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':0.7,'Jupiter/Saturn':1.0,'Saturn/Zon':1.5,'Uranus/Zon':0.6,'Neptunus/Zon':0.5},short:{'Maan/Zon':1.2,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':0.9,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.6,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},note:'Dollar: Saturn dominant. Traagste cyclus-response.'},
   WTI:{long:{'Maan/Zon':0.5,'Mercurius/Zon':0.3,'Venus/Zon':0.4,'Mars/Zon':1.6,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.8,'Saturn/Zon':0.7,'Uranus/Zon':0.4,'Neptunus/Zon':0.6},short:{'Maan/Zon':1.3,'Mercurius/Zon':0.8,'Venus/Zon':0.3,'Mars/Zon':1.8,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.3},note:'WTI: Mars energie-cyclus dominant.'},
-  COPPER:{long:{'Maan/Zon':0.4,'Mercurius/Zon':0.3,'Venus/Zon':0.6,'Mars/Zon':1.2,'Jupiter/Zon':1.0,'Jupiter/Saturn':1.4,'Saturn/Zon':0.8,'Uranus/Zon':0.5,'Neptunus/Zon':0.3},short:{'Maan/Zon':1.2,'Mercurius/Zon':0.8,'Venus/Zon':0.4,'Mars/Zon':1.5,'Jupiter/Zon':0.6,'Jupiter/Saturn':0.2,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.1},note:'Koper: industrieel metaal. Mars & Jupiter/Saturn dominant. Gevoelig voor economische cycli.'},
+  COPPER:{long:{'Maan/Zon':0.4,'Venus/Zon':0.6,'Mars/Zon':1.2,'Jupiter/Saturn':1.4},short:{'Maan/Zon':1.2,'Venus/Zon':0.4,'Mars/Zon':1.5,'Jupiter/Saturn':0.2},note:'Koper: industrieel metaal. Mars & Jupiter/Saturn dominant. Gevoelig voor economische cycli.'},
 };
 
 const SEAS_DATA={
@@ -517,7 +517,7 @@ const PHASE_PRESETS={
     SPX:{'Maan/Zon':0,'Venus/Zon':4,'Mars/Zon':6,'Jupiter/Zon':10,'Jupiter/Saturn':14,'Saturn/Zon':9,'Uranus/Zon':3,'Mercurius/Zon':1,'Neptunus/Zon':0},
     DXY:{'Maan/Zon':-1,'Venus/Zon':3,'Mars/Zon':4,'Jupiter/Zon':8,'Jupiter/Saturn':12,'Saturn/Zon':11,'Uranus/Zon':4,'Mercurius/Zon':0,'Neptunus/Zon':0},
     WTI:{'Maan/Zon':2,'Venus/Zon':5,'Mars/Zon':9,'Jupiter/Zon':7,'Jupiter/Saturn':10,'Saturn/Zon':6,'Uranus/Zon':3,'Mercurius/Zon':1,'Neptunus/Zon':0},
-    COPPER:{'Maan/Zon':1,'Venus/Zon':4,'Mars/Zon':8,'Jupiter/Zon':9,'Jupiter/Saturn':15,'Saturn/Zon':5,'Uranus/Zon':3,'Mercurius/Zon':1,'Neptunus/Zon':0},
+    COPPER:{'Maan/Zon':1,'Venus/Zon':4,'Mars/Zon':8,'Jupiter/Saturn':15},
   }},
   momentum:{note:'Fase vooruitgeschoven — detecteert vroegere draaipunten.',phases:{
     XAU:{'Maan/Zon':-5,'Venus/Zon':14,'Mars/Zon':10,'Jupiter/Zon':20,'Jupiter/Saturn':35,'Saturn/Zon':12,'Uranus/Zon':6,'Mercurius/Zon':-3,'Neptunus/Zon':0},
@@ -526,7 +526,7 @@ const PHASE_PRESETS={
     SPX:{'Maan/Zon':-1,'Venus/Zon':8,'Mars/Zon':12,'Jupiter/Zon':18,'Jupiter/Saturn':22,'Saturn/Zon':16,'Uranus/Zon':6,'Mercurius/Zon':2,'Neptunus/Zon':0},
     DXY:{'Maan/Zon':-3,'Venus/Zon':6,'Mars/Zon':8,'Jupiter/Zon':14,'Jupiter/Saturn':20,'Saturn/Zon':18,'Uranus/Zon':7,'Mercurius/Zon':1,'Neptunus/Zon':0},
     WTI:{'Maan/Zon':4,'Venus/Zon':10,'Mars/Zon':16,'Jupiter/Zon':12,'Jupiter/Saturn':18,'Saturn/Zon':10,'Uranus/Zon':6,'Mercurius/Zon':2,'Neptunus/Zon':0},
-    COPPER:{'Maan/Zon':2,'Venus/Zon':8,'Mars/Zon':14,'Jupiter/Zon':16,'Jupiter/Saturn':25,'Saturn/Zon':9,'Uranus/Zon':6,'Mercurius/Zon':2,'Neptunus/Zon':0},
+    COPPER:{'Maan/Zon':2,'Venus/Zon':8,'Mars/Zon':14,'Jupiter/Saturn':25},
   }},
 };
 
