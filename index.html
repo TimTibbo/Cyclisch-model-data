@@ -1135,7 +1135,7 @@ function renderCharts(asset,start,end,modelData){
   const compPanel=document.getElementById('compPanel');
   compPanel.style.display=showComps&&activeView==='composite'?'':'none';
   if(showComps&&activeView==='composite'){
-    const compDs=modelData.components.map((c,i)=>({
+    const compDs=modelData.components.filter(c=>c.weight>0.1).map((c,i)=>({
       label:`${c.label} (${c.periodStr}) ×${c.weight.toFixed(1)}`,
       data:c.values.map(v=>v*c.weight),
       borderColor:COMP_COLORS[i%COMP_COLORS.length],
