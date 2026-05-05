@@ -916,18 +916,21 @@ const SPIRAL_INTERVALS = [0,1,2,3,5,8,13,21,34,55,89].map(n=>
 );
 
 function getSpiralDates(anchorDate, rangeStart, rangeEnd){
-  // Bereken alle Spiral Calendar projectie-datums vanuit een anker
   const anchor = new Date(anchorDate);
+  if(isNaN(anchor.getTime()))return [];
   const results = [];
   SPIRAL_INTERVALS.forEach(days=>{
     if(days===0)return;
     [1,-1].forEach(dir=>{
-      const d = new Date(anchor);
-      d.setDate(d.getDate() + dir*days);
-      const ds = d.toISOString().slice(0,10);
-      if(ds >= rangeStart && ds <= rangeEnd){
-        results.push({date:ds, days:days, dir:dir>0?'toekomst':'verleden'});
-      }
+      try{
+        const d = new Date(anchor.getTime());
+        d.setDate(d.getDate() + dir*days);
+        if(isNaN(d.getTime()))return;
+        const ds = d.toISOString().slice(0,10);
+        if(ds >= rangeStart && ds <= rangeEnd){
+          results.push({date:ds, days:days, dir:dir>0?'toekomst':'verleden'});
+        }
+      }catch(e){}
     });
   });
   return results;
