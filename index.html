@@ -18,8 +18,8 @@
 body{background:var(--bg);color:var(--text);font-family:'SF Mono','Fira Code',monospace;font-size:var(--fs);min-height:100vh;overflow:hidden;}
 .header{padding:9px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .header h1{font-size:12px;font-weight:600;color:#fff;letter-spacing:.12em;text-transform:uppercase;}
-.header-meta{font-size:10px;color:var(--muted2);display:flex;gap:14px;align-items:center;}
-.badge{font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid;}
+.header-meta{font-size:12px;color:var(--muted2);display:flex;gap:14px;align-items:center;}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid;}
 .badge-blue{background:#5b8af518;border-color:#5b8af535;color:#7ba8f8;}
 .badge-gold{background:#d4a84318;border-color:#d4a84335;color:#d4a843;}
 
@@ -28,13 +28,13 @@ body{background:var(--bg);color:var(--text);font-family:'SF Mono','Fira Code',mo
 .tab{padding:4px 12px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;background:transparent;color:var(--muted2);transition:all .12s;}
 .tab.active{color:#fff;border-color:var(--tab-color,var(--accent));background:color-mix(in srgb,var(--tab-color,var(--accent)) 18%,transparent);}
 .ctrl-group{display:flex;align-items:center;gap:6px;}
-.ctrl-label{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;}
+.ctrl-label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;}
 select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:3px;font-family:inherit;font-size:11px;}
 .model-sw{display:flex;gap:2px;}
-.msw{padding:3px 10px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--muted2);}
+.msw{padding:3px 10px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;background:transparent;color:var(--muted2);}
 .msw.active{background:var(--surface2);color:var(--text);}
 .view-sw{display:flex;gap:2px;}
-.vsw{padding:3px 10px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--muted2);}
+.vsw{padding:3px 10px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;background:transparent;color:var(--muted2);}
 .vsw.active{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);border-color:var(--accent);}
 
 .app{display:grid;grid-template-columns:var(--left-w,210px) 4px 1fr 4px var(--right-w,210px);height:calc(100vh - 72px);overflow:hidden;}
@@ -45,104 +45,104 @@ select{background:var(--surface2);border:1px solid var(--border2);color:var(--te
 
 /* LEFT */
 .left-panel{border-right:1px solid var(--border);overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:12px;}
-.panel-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
-.reset-btn{font-size:9px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
+.panel-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.reset-btn{font-size:11px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
 .weight-item{margin-bottom:9px;}
 .weight-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
-.weight-name{font-size:10px;font-weight:500;}
-.weight-tag{font-size:8px;color:var(--muted);padding:1px 4px;background:var(--surface2);border-radius:2px;}
+.weight-name{font-size:12px;font-weight:500;}
+.weight-tag{font-size:10px;color:var(--muted);padding:1px 4px;background:var(--surface2);border-radius:2px;}
 .weight-val{font-size:11px;font-weight:700;color:var(--text);min-width:28px;text-align:right;}
-.weight-desc{font-size:8px;color:var(--muted);margin-bottom:3px;}
+.weight-desc{font-size:10px;color:var(--muted);margin-bottom:3px;}
 .corr-row{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
 .corr-bar-bg{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
 .corr-fill{height:100%;border-radius:2px;}
-.corr-val{font-size:8px;width:36px;text-align:right;}
+.corr-val{font-size:10px;width:36px;text-align:right;}
 input[type=range]{width:100%;height:3px;-webkit-appearance:none;appearance:none;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;cursor:pointer;}
 .wbar-bg{height:2px;background:var(--border);border-radius:1px;margin-top:3px;}
 .wbar-fill{height:100%;border-radius:1px;transition:width .2s;}
-.preset-note{font-size:9px;color:var(--muted2);line-height:1.5;padding:6px 8px;background:var(--surface2);border-radius:3px;border-left:2px solid var(--border2);}
-.opt-btn{width:100%;padding:5px;border:1px solid var(--accent);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--accent);margin-top:6px;}
+.preset-note{font-size:11px;color:var(--muted2);line-height:1.5;padding:6px 8px;background:var(--surface2);border-radius:3px;border-left:2px solid var(--border2);}
+.opt-btn{width:100%;padding:5px;border:1px solid var(--accent);border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;background:transparent;color:var(--accent);margin-top:6px;}
 .opt-btn:hover{background:color-mix(in srgb,var(--accent) 15%,transparent);}
 
 /* SEAS */
 .seas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
 .seas-year-sel{display:flex;gap:3px;flex-wrap:wrap;}
-.yr-btn{font-size:9px;padding:2px 6px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;background:transparent;color:var(--muted2);}
+.yr-btn{font-size:11px;padding:2px 6px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;background:transparent;color:var(--muted2);}
 .yr-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2);}
-.seas-source{font-size:8px;color:var(--muted);margin-bottom:5px;line-height:1.4;}
+.seas-source{font-size:10px;color:var(--muted);margin-bottom:5px;line-height:1.4;}
 .seas-bar{display:flex;align-items:center;gap:5px;margin-bottom:3px;}
-.seas-month{font-size:10px;color:var(--muted2);width:26px;text-align:right;}
+.seas-month{font-size:12px;color:var(--muted2);width:26px;text-align:right;}
 .seas-track{flex:1;height:7px;background:var(--border);border-radius:3px;overflow:hidden;position:relative;}
 .seas-mid{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--border2);}
 .seas-fill-pos{position:absolute;left:50%;height:100%;border-radius:0 2px 2px 0;}
 .seas-fill-neg{position:absolute;right:50%;height:100%;border-radius:2px 0 0 2px;}
-.seas-val{font-size:10px;font-weight:600;width:36px;}
+.seas-val{font-size:12px;font-weight:600;width:36px;}
 .seas-cur{outline:1px solid var(--muted2);border-radius:2px;}
 .toggle-row{display:flex;flex-direction:column;gap:5px;}
 .toggle{display:flex;align-items:center;gap:6px;cursor:pointer;}
 .toggle input{accent-color:var(--accent);}
-.toggle span{font-size:10px;color:var(--muted2);}
+.toggle span{font-size:12px;color:var(--muted2);}
 
 /* MAIN */
 .main{padding:10px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
 .metric{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:9px 11px;}
-.metric-label{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.metric-label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
 .metric-val{font-size:16px;font-weight:600;color:#fff;line-height:1.1;}
-.metric-sub{font-size:9px;color:var(--muted2);margin-top:3px;}
+.metric-sub{font-size:11px;color:var(--muted2);margin-top:3px;}
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:10px 13px;}
 .chart-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;flex-wrap:wrap;gap:5px;}
-.chart-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);}
+.chart-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);}
 .legend{display:flex;gap:10px;flex-wrap:wrap;}
-.leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted2);}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted2);}
 .leg-line{width:14px;height:2px;border-radius:1px;}
 .conf-bar-bg{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin:5px 0 3px;}
 .conf-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
-.conf-labels{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);}
-.conf-detail{font-size:9px;color:var(--muted2);margin-top:4px;line-height:1.5;}
+.conf-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);}
+.conf-detail{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.5;}
 
 /* Y-AXIS LABELS */
 .y-axis-left{display:flex;flex-direction:column;justify-content:space-between;padding:4px 0;min-width:36px;text-align:right;}
 .y-axis-right{display:flex;flex-direction:column;justify-content:space-between;padding:4px 0;min-width:62px;}
-.y-label{font-size:9px;line-height:1;}
+.y-label{font-size:11px;line-height:1;}
 
 /* RIGHT */
 .right-panel{border-left:1px solid var(--border);overflow-y:auto;}
 .sb-section{padding:10px 12px;border-bottom:1px solid var(--border);}
-.sb-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:8px;}
+.sb-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:8px;}
 .event-item{padding:6px 8px;margin-bottom:4px;border-radius:3px;background:var(--bg);border-left:2px solid var(--border2);}
-.ei-date{font-size:9px;color:var(--muted2);}
+.ei-date{font-size:11px;color:var(--muted2);}
 .ei-name{font-size:11px;color:var(--text);margin-top:1px;}
-.ei-sub{font-size:9px;color:var(--muted);}
+.ei-sub{font-size:11px;color:var(--muted);}
 .kp-item{padding:6px 8px;margin-bottom:4px;border-radius:3px;background:var(--bg);}
 .kp-bar{height:2px;border-radius:1px;margin-top:4px;background:var(--border);}
-.retro-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:9px;}
+.retro-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:11px;}
 .retro-R{color:var(--red);} .retro-D{color:var(--green);}
 
 /* BACKTEST */
 .phase-row{display:flex;align-items:center;gap:4px;margin-top:2px;}
-.phase-label{font-size:8px;color:var(--muted);width:22px;}
-.phase-val{font-size:9px;font-weight:600;width:28px;text-align:right;}
+.phase-label{font-size:10px;color:var(--muted);width:22px;}
+.phase-val{font-size:11px;font-weight:600;width:28px;text-align:right;}
 .phase-track{flex:1;position:relative;height:3px;background:var(--border2);border-radius:2px;}
-.opt-phase-btn{width:100%;padding:5px;border:1px solid var(--purple);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--purple);margin-top:4px;}
+.opt-phase-btn{width:100%;padding:5px;border:1px solid var(--purple);border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;background:transparent;color:var(--purple);margin-top:4px;}
 .opt-phase-btn:hover{background:color-mix(in srgb,var(--purple) 15%,transparent);}
 .preset-btns{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;}
-.preset-btn{font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;background:transparent;color:var(--muted2);}
+.preset-btn{font-size:11px;padding:3px 8px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;background:transparent;color:var(--muted2);}
 .preset-btn.active{background:var(--surface2);color:var(--text);border-color:var(--accent);}
-.opt-running{color:var(--orange);font-size:9px;margin-top:4px;display:none;}
+.opt-running{color:var(--orange);font-size:11px;margin-top:4px;display:none;}
 .corr-card{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:7px 10px;}
-.corr-card-label{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.corr-card-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
 .corr-card-val{font-size:15px;font-weight:700;}
 /* Hover tooltips */
-.tip{display:none;position:absolute;z-index:99;right:0;top:100%;margin-top:4px;background:#1a1d26;border:1px solid #2a2f42;border-radius:4px;padding:7px 10px;font-size:9px;color:#aab0c8;line-height:1.6;width:220px;pointer-events:none;box-shadow:0 4px 16px #0006;}
+.tip{display:none;position:absolute;z-index:99;right:0;top:100%;margin-top:4px;background:#1a1d26;border:1px solid #2a2f42;border-radius:4px;padding:7px 10px;font-size:11px;color:#aab0c8;line-height:1.6;width:220px;pointer-events:none;box-shadow:0 4px 16px #0006;}
 .event-item{position:relative;cursor:help;}
 .event-item:hover .tip{display:block;}
-.cml-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted2);cursor:help;position:relative;}
+.cml-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted2);cursor:help;position:relative;}
 .cml-item:hover .tip{display:block;}
 .cml-item .tip{left:0;right:auto;width:200px;}
 .chart-markers-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-.view-info-btn{font-size:9px;color:var(--muted);cursor:help;position:relative;padding:2px 7px;border:1px solid var(--border);border-radius:3px;margin-left:4px;}
+.view-info-btn{font-size:11px;color:var(--muted);cursor:help;position:relative;padding:2px 7px;border:1px solid var(--border);border-radius:3px;margin-left:4px;}
 .view-info-btn:hover .tip{display:block;}
 .view-info-btn .tip{right:0;left:auto;width:240px;}
 /* Info Modal */
@@ -154,30 +154,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
 .modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;}
 .modal-close:hover{color:var(--text);}
 .modal-tabs{display:flex;gap:2px;padding:8px 14px 0;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
-.modal-tab{padding:5px 14px;font-size:10px;font-family:monospace;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.modal-tab{padding:5px 14px;font-size:12px;font-family:monospace;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
 .modal-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .modal-body{overflow-y:auto;padding:18px;flex:1;}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .info-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px;position:relative;}
 .info-card-icon{font-size:22px;margin-bottom:8px;}
 .info-card-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:.05em;}
-.info-card-period{font-size:9px;color:var(--accent);background:var(--accent)15;padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:8px;}
-.info-card-body{font-size:10px;color:var(--muted2);line-height:1.75;}
+.info-card-period{font-size:11px;color:var(--accent);background:var(--accent)15;padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:8px;}
+.info-card-body{font-size:12px;color:var(--muted2);line-height:1.75;}
 .info-card-body strong{color:var(--text);}
 .info-card-markets{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
-.mkt-tag{font-size:8px;padding:2px 7px;border-radius:10px;border:1px solid;}
-.info-section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
-.info-table{width:100%;border-collapse:collapse;font-size:10px;}
-.info-table th{text-align:left;color:var(--muted);font-weight:600;padding:5px 8px;border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:.07em;}
+.mkt-tag{font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid;}
+.info-section-title{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.info-table{width:100%;border-collapse:collapse;font-size:12px;}
+.info-table th{text-align:left;color:var(--muted);font-weight:600;padding:5px 8px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.07em;}
 .info-table td{padding:7px 8px;border-bottom:1px solid var(--border)15;color:var(--muted2);vertical-align:top;}
 .info-table tr:hover td{background:var(--surface2);}
 .info-table td:first-child{color:var(--text);font-weight:600;}
 .aspect-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
-.info-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border:1px solid var(--border2);border-radius:4px;background:none;color:var(--muted2);font-size:10px;font-family:monospace;cursor:pointer;transition:all .15s;}
+.info-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border:1px solid var(--border2);border-radius:4px;background:none;color:var(--muted2);font-size:12px;font-family:monospace;cursor:pointer;transition:all .15s;}
 .info-btn:hover{border-color:var(--accent);color:var(--accent);}
 .how-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
-.how-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent)22;border:1px solid var(--accent)44;color:var(--accent);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.how-step-body{font-size:10px;color:var(--muted2);line-height:1.7;}
+.how-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent)22;border:1px solid var(--accent)44;color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.how-step-body{font-size:12px;color:var(--muted2);line-height:1.7;}
 .how-step-body strong{color:var(--text);}
 .composite-viz{background:var(--surface2);border-radius:6px;padding:14px;margin:12px 0;}
 .composite-bar{height:12px;border-radius:6px;margin:4px 0;position:relative;overflow:hidden;}
@@ -186,7 +186,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
 .slider-btn{width:16px;height:16px;border:1px solid var(--border2);border-radius:3px;background:var(--surface2);color:var(--muted2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0;}
 .slider-btn:hover{border-color:var(--accent);color:var(--accent);}
 .comp-separator{border:none;border-top:1px solid var(--border);margin:8px 0 4px;}
-.tz-select{font-size:9px;padding:2px 5px;background:var(--surface2);color:var(--muted2);border:1px solid var(--border);border-radius:3px;font-family:monospace;cursor:pointer;}
+.tz-select{font-size:11px;padding:2px 5px;background:var(--surface2);color:var(--muted2);border:1px solid var(--border);border-radius:3px;font-family:monospace;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -256,7 +256,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
   <div class="ctrl-group" style="margin-left:auto;">
     <span class="ctrl-label">Tekst</span>
     <div style="display:flex;align-items:center;gap:5px;">
-      <span style="font-size:9px;color:var(--muted)">A</span>
+      <span style="font-size:11px;color:var(--muted)">A</span>
       <input type="range" id="fontSizeSlider" min="9" max="16" value="12" step="1"
         style="width:70px;accent-color:var(--accent);"
         oninput="setFontSize(parseInt(this.value))">
@@ -286,19 +286,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
       <div class="toggle-row" id="toggles"></div>
       <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
         <button id="spiralToggle" onclick="toggleSpiral()"
-          style="width:100%;padding:5px;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-family:monospace;font-size:9px;background:transparent;color:var(--muted);text-align:left;">
+          style="width:100%;padding:5px;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-family:monospace;font-size:11px;background:transparent;color:var(--muted);text-align:left;">
           &#9432; Spiral Calendar (Carolan)
         </button>
         <div id="spiralPanel" style="display:none;margin-top:6px;">
-          <div style="font-size:8px;color:var(--muted);margin-bottom:4px;">Anker-draaipunt:</div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Anker-draaipunt:</div>
           <div style="display:flex;gap:4px;align-items:center;">
             <input type="date" id="spiralAnchorInput"
-              style="flex:1;font-size:9px;padding:3px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:3px;font-family:monospace;"
+              style="flex:1;font-size:11px;padding:3px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:3px;font-family:monospace;"
               onchange="setSpiralAnchor(this.value)">
             <button onclick="setSpiralAnchor(null);document.getElementById('spiralAnchorInput').value=''"
-              style="font-size:9px;padding:3px 6px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--muted);cursor:pointer;">Auto</button>
+              style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--muted);cursor:pointer;">Auto</button>
           </div>
-          <div id="spiralAnchorLabel" style="font-size:8px;color:var(--purple);margin-top:3px;"></div>
+          <div id="spiralAnchorLabel" style="font-size:10px;color:var(--purple);margin-top:3px;"></div>
         </div>
       </div>
     </div>
@@ -325,7 +325,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
         <span class="chart-title">Confluence Score</span>
         <div style="display:flex;align-items:baseline;gap:5px;">
           <span id="confScore" style="font-size:20px;font-weight:700;color:#fff">–</span>
-          <span style="font-size:9px;color:var(--muted2)">/ 100</span>
+          <span style="font-size:11px;color:var(--muted2)">/ 100</span>
         </div>
       </div>
       <div class="conf-bar-bg"><div class="conf-bar-fill" id="confFill"></div></div>
@@ -396,9 +396,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
     <div class="chart-card" id="uitlegPanel" style="padding:12px 14px;">
       <div class="chart-top" style="margin-bottom:10px;">
         <span class="chart-title">&#9432; Modelonderbouwing &amp; Leeswijzer</span>
-        <span id="uitlegPreset" style="font-size:9px;color:var(--accent);padding:2px 8px;border:1px solid var(--accent)33;border-radius:10px;background:var(--accent)11;"></span>
+        <span id="uitlegPreset" style="font-size:11px;color:var(--accent);padding:2px 8px;border:1px solid var(--accent)33;border-radius:10px;background:var(--accent)11;"></span>
       </div>
-      <div id="uitlegTekst" style="font-size:10px;color:var(--muted2);line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;"></div>
+      <div id="uitlegTekst" style="font-size:12px;color:var(--muted2);line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;"></div>
     </div>
   </div>
 
@@ -865,7 +865,7 @@ function renderWeightSliders(){
         <span class="weight-val" id="wv_${key}">${w.toFixed(1)}</span>
       </div>
       ${hasCorr?`<div class="corr-row">
-        <span style="font-size:8px;color:var(--muted);width:22px">r=</span>
+        <span style="font-size:10px;color:var(--muted);width:22px">r=</span>
         <div class="corr-bar-bg"><div class="corr-fill" style="width:${corrPct}%;background:${corrCol}"></div></div>
         <span class="corr-val" style="color:${corrCol}">${r>=0?'+':''}${r.toFixed(3)}</span>
       </div>`:''}
@@ -990,7 +990,7 @@ function renderSeasonality(asset,years){
     :`Onvoldoende data voor ${years} jaar`;
 
   if(!data){
-    document.getElementById('seasonalityBars').innerHTML=`<div style="font-size:9px;color:var(--muted);padding:6px 0">Laden... of onvoldoende historische data.</div>`;
+    document.getElementById('seasonalityBars').innerHTML=`<div style="font-size:11px;color:var(--muted);padding:6px 0">Laden... of onvoldoende historische data.</div>`;
     return;
   }
 
@@ -1055,7 +1055,7 @@ function renderBacktestStats(composite,start,end){
   (D.ohlc?.XAU||[]).forEach(r=>ohlcMap[r.date]=r.close);
   const dates=D.dates.slice(start,end);
   const paired=dates.map((d,i)=>({comp:composite[i],close:ohlcMap[d]})).filter(p=>p.close!==undefined);
-  if(paired.length<10){document.getElementById('corrSummary').innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted)">Onvoldoende historische data in dit venster.</div>';return;}
+  if(paired.length<10){document.getElementById('corrSummary').innerHTML='<div style="grid-column:1/-1;font-size:11px;color:var(--muted)">Onvoldoende historische data in dit venster.</div>';return;}
   // 5-dag forward returns
   const xs=[],ys=[];
   for(let i=0;i<paired.length-5;i++){xs.push(paired[i].comp);ys.push((paired[i+5].close/paired[i].close)-1);}
@@ -1068,10 +1068,10 @@ function renderBacktestStats(composite,start,end){
   document.getElementById('corrSummary').innerHTML=`
     <div class="corr-card"><div class="corr-card-label">Correlatie (5d return)</div>
       <div class="corr-card-val" style="color:${col}">${r>=0?'+':''}${r.toFixed(3)}</div>
-      <div style="font-size:8px;color:var(--muted);margin-top:3px">n=${xs.length} datapunten</div></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">n=${xs.length} datapunten</div></div>
     <div class="corr-card"><div class="corr-card-label">Richtingsnauwkeurigheid</div>
       <div class="corr-card-val" style="color:${acc>=55?'#3ec87a':acc>=50?'#f7a030':'#e8556a'}">${acc}%</div>
-      <div style="font-size:8px;color:var(--muted);margin-top:3px">Hoe vaak juiste richting?</div></div>`;
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">Hoe vaak juiste richting?</div></div>`;
 }
 
 const markerPlugin={
@@ -1142,11 +1142,12 @@ const markerPlugin={
     }
     // === SPIRAL CALENDAR LIJNEN ===
     if(showSpiral){
+      const chartDates = D.dates.slice(ws, we);
       const anchor = spiralAnchor || findAutoAnchor(activeAsset);
       document.getElementById('spiralAnchorLabel').textContent =
         `Anker: ${anchor} ${spiralAnchor?'(handmatig)':'(auto)'}`;
       document.getElementById('spiralPanel').style.display='';
-      const spiralDates = getSpiralDates(anchor, dates[0], dates[dates.length-1]);
+      const spiralDates = getSpiralDates(anchor, chartDates[0], chartDates[chartDates.length-1]);
       spiralDates.forEach(sp=>{
         const idx = D.dates.indexOf(sp.date);
         if(idx<ws||idx>=we)return;
@@ -1565,8 +1566,8 @@ function renderUitleg(asset, modelData, start, end){
 
   document.getElementById('uitlegTekst').innerHTML=blokken.map(b=>`
     <div style="padding:8px 10px;background:var(--surface2);border-radius:4px;border-left:2px solid var(--border2);">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:5px;">${b.titel}</div>
-      <div style="font-size:10px;color:var(--muted2);line-height:1.7;">${b.tekst}</div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:5px;">${b.titel}</div>
+      <div style="font-size:12px;color:var(--muted2);line-height:1.7;">${b.tekst}</div>
     </div>`).join('');
 }
 
@@ -1652,7 +1653,7 @@ initResize('resizeRight','right','right');
       <!-- TAB: HOE WERKT HET -->
       <div id="tab-hoe">
         <div class="info-section-title">Het idee achter het model</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.8;margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--muted2);line-height:1.8;margin-bottom:14px;">
           Het Cyclisch Marktmodel is gebaseerd op de hypothese dat planetaire bewegingen samenhangen met cycli in financiële markten. Dit is geen astrologie in de traditionele zin — het is een <strong style="color:var(--text)">kwantitatief cyclus-model</strong> waarbij astronomische data wordt gebruikt als basis voor periodieke golven. De composite golf is de som van meerdere planeetcycli, elk gewogen op hun historische correlatie met het asset.
         </div>
         <div class="how-step"><div class="how-step-num">1</div><div class="how-step-body"><strong>Astronomische data</strong> — Voor elke dag van 2022 tot 2029 berekent het model de positie van planeten via de Swiss Ephemeris. Dit is dezelfde data die professionele astronomen gebruiken.</div></div>
@@ -1663,7 +1664,7 @@ initResize('resizeRight','right','right');
         <div class="how-step"><div class="how-step-num">6</div><div class="how-step-body"><strong>Gebruik</strong> — Het model is een <strong>timing-filter</strong>, geen koopadvies. Een bullish composite betekent dat het cyclische ritme omhoog wijst — niet dat de koers per definitie stijgt. Combineer altijd met technische analyse.</div></div>
 
         <div class="info-section-title">Belangrijke disclaimers</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.8;background:var(--surface2);padding:12px;border-radius:6px;border-left:3px solid var(--orange);">
+        <div style="font-size:12px;color:var(--muted2);line-height:1.8;background:var(--surface2);padding:12px;border-radius:6px;border-left:3px solid var(--orange);">
           ⚠ Dit model geeft <strong style="color:var(--text)">geen beleggingsadvies</strong>. Alle projecties zijn gebaseerd op historische cyclische patronen en zijn geen garantie voor toekomstige resultaten. Cycli kunnen falen, verschuiven of afwezig zijn in bepaalde marktomstandigheden. Gebruik dit model als aanvullend instrument naast andere analyses.
         </div>
       </div>
@@ -1671,7 +1672,7 @@ initResize('resizeRight','right','right');
       <!-- TAB: PLANETEN -->
       <div id="tab-planeten" style="display:none">
         <div class="info-section-title">Planetaire cycli in financiële markten</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.7;margin-bottom:14px;">Elke planeetverhouding heeft een vaste cyclus-periode. Kortere cycli (Maan, Mercurius) sturen kortetermijn momentum. Langere cycli (Jupiter/Saturn, Uranus) bepalen structurele trends.</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.7;margin-bottom:14px;">Elke planeetverhouding heeft een vaste cyclus-periode. Kortere cycli (Maan, Mercurius) sturen kortetermijn momentum. Langere cycli (Jupiter/Saturn, Uranus) bepalen structurele trends.</div>
         <div class="info-grid">
 
           <div class="info-card">
@@ -1780,7 +1781,7 @@ initResize('resizeRight','right','right');
       <!-- TAB: ASPECTEN -->
       <div id="tab-aspecten" style="display:none">
         <div class="info-section-title">Planetaire Aspecten</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.7;margin-bottom:14px;">Een aspect is de hoekverhouding tussen twee planeten vanuit het perspectief van de aarde. Bepaalde hoeken hebben specifieke energetische betekenissen die historisch correleren met marktbewegingen.</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.7;margin-bottom:14px;">Een aspect is de hoekverhouding tussen twee planeten vanuit het perspectief van de aarde. Bepaalde hoeken hebben specifieke energetische betekenissen die historisch correleren met marktbewegingen.</div>
         <table class="info-table">
           <tr><th>Symbool</th><th>Aspect</th><th>Hoek</th><th>Kleur in grafiek</th><th>Marktbetekenis</th></tr>
           <tr>
@@ -1820,7 +1821,7 @@ initResize('resizeRight','right','right');
         </table>
 
         <div class="info-section-title" style="margin-top:20px;">Retrograde Perioden</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.8;background:var(--surface2);padding:12px;border-radius:6px;">
+        <div style="font-size:12px;color:var(--muted2);line-height:1.8;background:var(--surface2);padding:12px;border-radius:6px;">
           <strong style="color:var(--text)">℞ Retrograde</strong> — Een planeet lijkt achterwaarts te bewegen vanuit het perspectief van de aarde (optisch fenomeen door verschil in baansnelheid). Retrograde perioden staan bekend om het "terugkomen" op eerdere thema's:<br><br>
           <strong style="color:#9d6ff5">Mercurius ℞</strong> (3x/jaar, ~3 weken): Communicatieproblemen, contractfouten, vertragingen. Verhoogde volatiliteit en koersomkeringen. Vermijd grote beslissingen.<br><br>
           <strong style="color:#e8556a">Mars ℞</strong> (~2x per 4 jaar, ~2 mnd): Energieverlies, agressie naar binnen gericht. WTI en energiemarkten reageren hier sterk op. Vaak een langzamere, moeizamere marktfase.<br><br>
@@ -1831,19 +1832,19 @@ initResize('resizeRight','right','right');
       <!-- TAB: COMPOSITE LEZEN -->
       <div id="tab-composite" style="display:none">
         <div class="info-section-title">De Composite Wave begrijpen</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.8;margin-bottom:14px;">De composite is de kern van het model. Het is een getal tussen −1,0 en +1,0 dat de gecombineerde cyclische kracht weergeeft op een bepaalde dag.</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.8;margin-bottom:14px;">De composite is de kern van het model. Het is een getal tussen −1,0 en +1,0 dat de gecombineerde cyclische kracht weergeeft op een bepaalde dag.</div>
 
         <div class="composite-viz">
-          <div style="font-size:9px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;">Waarde interpretatie</div>
-          <div style="font-size:9px;color:var(--green);margin-bottom:3px;">+0,75 tot +1,0 — Sterk bullish cyclisch signaal</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;">Waarde interpretatie</div>
+          <div style="font-size:11px;color:var(--green);margin-bottom:3px;">+0,75 tot +1,0 — Sterk bullish cyclisch signaal</div>
           <div class="composite-bar"><div class="composite-fill" style="width:87%;background:linear-gradient(90deg,#3ec87a,#3ec87a88)"></div></div>
-          <div style="font-size:9px;color:#7fc8a0;margin:6px 0 3px;">+0,25 tot +0,75 — Zwak bullish</div>
+          <div style="font-size:11px;color:#7fc8a0;margin:6px 0 3px;">+0,25 tot +0,75 — Zwak bullish</div>
           <div class="composite-bar"><div class="composite-fill" style="width:55%;background:linear-gradient(90deg,#3ec87a55,#3ec87a22)"></div></div>
-          <div style="font-size:9px;color:var(--muted);margin:6px 0 3px;">−0,25 tot +0,25 — Neutraal / Zijwaarts</div>
+          <div style="font-size:11px;color:var(--muted);margin:6px 0 3px;">−0,25 tot +0,25 — Neutraal / Zijwaarts</div>
           <div class="composite-bar" style="background:#2a2f42"><div class="composite-fill" style="width:50%;background:#555"></div></div>
-          <div style="font-size:9px;color:#e8808a;margin:6px 0 3px;">−0,75 tot −0,25 — Zwak bearish</div>
+          <div style="font-size:11px;color:#e8808a;margin:6px 0 3px;">−0,75 tot −0,25 — Zwak bearish</div>
           <div class="composite-bar"><div class="composite-fill" style="width:55%;background:linear-gradient(90deg,#e8556a55,#e8556a22)"></div></div>
-          <div style="font-size:9px;color:var(--red);margin:6px 0 3px;">−1,0 tot −0,75 — Sterk bearish cyclisch signaal</div>
+          <div style="font-size:11px;color:var(--red);margin:6px 0 3px;">−1,0 tot −0,75 — Sterk bearish cyclisch signaal</div>
           <div class="composite-bar"><div class="composite-fill" style="width:87%;background:linear-gradient(90deg,#e8556a,#e8556a88)"></div></div>
         </div>
 
@@ -1860,7 +1861,7 @@ initResize('resizeRight','right','right');
         </table>
 
         <div class="info-section-title" style="margin-top:18px;">Confluence — Kracht van keerpunten</div>
-        <div style="font-size:10px;color:var(--muted2);line-height:1.8;">Een keerpunt is sterker naarmate meer cycli tegelijkertijd omkeren. Dit heet <strong style="color:var(--text)">confluence</strong>. In het rechter paneel zie je keerpunten gesorteerd op sterkte — de bovenste zijn het meest "druk bezet" door samenvallende cycli. Een confluent keerpunt waarbij ook een planetair event (conjunctie, oppositie) samenvalt is historisch het sterkste signaal.</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.8;">Een keerpunt is sterker naarmate meer cycli tegelijkertijd omkeren. Dit heet <strong style="color:var(--text)">confluence</strong>. In het rechter paneel zie je keerpunten gesorteerd op sterkte — de bovenste zijn het meest "druk bezet" door samenvallende cycli. Een confluent keerpunt waarbij ook een planetair event (conjunctie, oppositie) samenvalt is historisch het sterkste signaal.</div>
       </div>
 
       <!-- TAB: ASSETS -->
