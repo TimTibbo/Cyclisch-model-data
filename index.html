@@ -1240,6 +1240,8 @@ function applyTz(timeStr){
   const tzName=tzNames[activeTzOffset]||`UTC${activeTzOffset>=0?'+':''}${activeTzOffset}`;
   return `${String(h).padStart(2,'0')}:${min} ${tzName}`;
 }
+
+function renderSidebar(start,end,modelData){
   const s=D.dates[start],e=D.dates[Math.min(end-1,D.dates.length-1)];
   const all=[];
   D.moon_phases.forEach(ev=>{if(ev.date>=s&&ev.date<=e)all.push({...ev,cat:'moon'});});
