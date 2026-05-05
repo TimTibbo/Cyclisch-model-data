@@ -12,7 +12,7 @@
   --text:#eef0f6; --muted:#8890aa; --muted2:#aab0c8;
   --accent:#5b8af5; --gold:#d4a843; --green:#3ec87a; --red:#e8556a;
   --purple:#9d6ff5; --orange:#f7a030; --cyan:#38bcd4;
-  --fs:13px;
+  --fs:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'SF Mono','Fira Code',monospace;font-size:var(--fs);min-height:100vh;overflow:hidden;}
@@ -220,6 +220,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
     <div class="model-sw">
       <button class="msw active" id="mswL" onclick="setModel('long')">Long term</button>
       <button class="msw" id="mswS" onclick="setModel('short')">Short term</button>
+      <button class="msw" id="mswW" onclick="setModel('weekly')">Weekly</button>
     </div>
   </div>
   <div class="ctrl-group">
@@ -256,7 +257,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
     <span class="ctrl-label">Tekst</span>
     <div style="display:flex;align-items:center;gap:5px;">
       <span style="font-size:9px;color:var(--muted)">A</span>
-      <input type="range" id="fontSizeSlider" min="9" max="16" value="13" step="1"
+      <input type="range" id="fontSizeSlider" min="9" max="16" value="12" step="1"
         style="width:70px;accent-color:var(--accent);"
         oninput="setFontSize(parseInt(this.value))">
       <span style="font-size:13px;color:var(--muted)">A</span>
@@ -283,6 +284,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
     <div>
       <div class="panel-title">Weergave</div>
       <div class="toggle-row" id="toggles"></div>
+      <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
+        <button id="spiralToggle" onclick="toggleSpiral()"
+          style="width:100%;padding:5px;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-family:monospace;font-size:9px;background:transparent;color:var(--muted);text-align:left;">
+          &#9432; Spiral Calendar (Carolan)
+        </button>
+        <div id="spiralPanel" style="display:none;margin-top:6px;">
+          <div style="font-size:8px;color:var(--muted);margin-bottom:4px;">Anker-draaipunt:</div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <input type="date" id="spiralAnchorInput"
+              style="flex:1;font-size:9px;padding:3px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:3px;font-family:monospace;"
+              onchange="setSpiralAnchor(this.value)">
+            <button onclick="setSpiralAnchor(null);document.getElementById('spiralAnchorInput').value=''"
+              style="font-size:9px;padding:3px 6px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--muted);cursor:pointer;">Auto</button>
+          </div>
+          <div id="spiralAnchorLabel" style="font-size:8px;color:var(--purple);margin-top:3px;"></div>
+        </div>
+      </div>
     </div>
     <div>
       <div class="panel-title">Seasonality</div>
@@ -444,6 +462,7 @@ async function loadLiveOHLC(){
     const entries=await Promise.all(Object.entries(CSV_URLS).map(async([asset,url])=>[asset,await parseCSV(url)]));
     D.ohlc={};
     entries.forEach(([a,rows])=>D.ohlc[a]=rows);
+    SEAS_CACHE={}; // reset cache zodat seasonality herberekend wordt
     const latest=entries.map(([,rows])=>rows[rows.length-1]?.date||'').sort().pop();
     badge.textContent=`✓ Live data t/m ${latest}`;
     badge.style.borderColor='#3ec87a55';badge.style.color='#3ec87a';
@@ -472,24 +491,93 @@ const CYCLE_META={
 };
 
 const PRESETS={
-  XAU:{long:{'Maan/Zon':0.4,'Mercurius/Zon':0.2,'Venus/Zon':1.4,'Mars/Zon':0.7,'Jupiter/Zon':0.9,'Jupiter/Saturn':1.5,'Saturn/Zon':1.0,'Uranus/Zon':0.3,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.8,'Mercurius/Zon':1.0,'Venus/Zon':0.9,'Mars/Zon':1.1,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},note:'Goud: Venus & Jupiter/Saturn dominant (lang). Maan & Mars voor timing (kort).'},
-  XAG:{long:{'Maan/Zon':0.8,'Mercurius/Zon':0.6,'Venus/Zon':1.0,'Mars/Zon':0.7,'Jupiter/Zon':0.8,'Jupiter/Saturn':1.2,'Saturn/Zon':0.8,'Uranus/Zon':0.3,'Neptunus/Zon':0.2},short:{'Maan/Zon':2.0,'Mercurius/Zon':1.2,'Venus/Zon':0.6,'Mars/Zon':1.0,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.1,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},note:'Zilver: sterkste Maan-correlatie. Mercurius voor volatiliteit.'},
-  BTC:{long:{'Maan/Zon':0.5,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':1.4,'Jupiter/Saturn':1.0,'Saturn/Zon':0.9,'Uranus/Zon':1.2,'Neptunus/Zon':0.3},short:{'Maan/Zon':1.5,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':1.2,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.5,'Neptunus/Zon':0.1},note:'BTC: Jupiter & Uranus disruptie. Experimenteel.'},
-  SPX:{long:{'Maan/Zon':0.4,'Mercurius/Zon':0.3,'Venus/Zon':0.6,'Mars/Zon':0.9,'Jupiter/Zon':1.0,'Jupiter/Saturn':1.5,'Saturn/Zon':1.1,'Uranus/Zon':0.4,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.4,'Mercurius/Zon':1.0,'Venus/Zon':0.5,'Mars/Zon':1.2,'Jupiter/Zon':0.5,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.1},note:'SPX: Jupiter/Saturn (Merriman). Mars voor korte volatiliteit.'},
-  DXY:{long:{'Maan/Zon':0.3,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':0.7,'Jupiter/Saturn':1.0,'Saturn/Zon':1.5,'Uranus/Zon':0.6,'Neptunus/Zon':0.5},short:{'Maan/Zon':1.2,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':0.9,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.6,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},note:'Dollar: Saturn dominant. Traagste cyclus-response.'},
-  WTI:{long:{'Maan/Zon':0.5,'Mercurius/Zon':0.3,'Venus/Zon':0.4,'Mars/Zon':1.6,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.8,'Saturn/Zon':0.7,'Uranus/Zon':0.4,'Neptunus/Zon':0.6},short:{'Maan/Zon':1.3,'Mercurius/Zon':0.8,'Venus/Zon':0.3,'Mars/Zon':1.8,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.3},note:'WTI: Mars energie-cyclus dominant.'},
-  COPPER:{long:{'Maan/Zon':0.7,'Mercurius/Zon':0.2,'Venus/Zon':1.0,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.6,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.4,'Mercurius/Zon':0.5,'Venus/Zon':0.5,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.2,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},note:'Koper: industrieel metaal. Mars & Venus dominant. Jupiter/Saturn als langetermijn achtergrond.'},
+  XAU:{
+    long:{'Maan/Zon':0.4,'Mercurius/Zon':0.2,'Venus/Zon':1.4,'Mars/Zon':0.7,'Jupiter/Zon':0.9,'Jupiter/Saturn':1.5,'Saturn/Zon':1.0,'Uranus/Zon':0.3,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':1.8,'Mercurius/Zon':1.0,'Venus/Zon':0.9,'Mars/Zon':1.1,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.2,'Venus/Zon':0.4,'Mars/Zon':0.3,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.0},
+    note:'Goud: Venus & Jupiter/Saturn dominant (lang). Maan & Mars voor timing (kort).'},
+  XAG:{
+    long:{'Maan/Zon':0.8,'Mercurius/Zon':0.6,'Venus/Zon':1.0,'Mars/Zon':0.7,'Jupiter/Zon':0.8,'Jupiter/Saturn':1.2,'Saturn/Zon':0.8,'Uranus/Zon':0.3,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':2.0,'Mercurius/Zon':1.2,'Venus/Zon':0.6,'Mars/Zon':1.0,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.1,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.4,'Venus/Zon':0.3,'Mars/Zon':0.2,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.0},
+    note:'Zilver: sterkste Maan-correlatie. Mercurius voor volatiliteit.'},
+  BTC:{
+    long:{'Maan/Zon':0.5,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':1.4,'Jupiter/Saturn':1.0,'Saturn/Zon':0.9,'Uranus/Zon':1.2,'Neptunus/Zon':0.3},
+    short:{'Maan/Zon':1.5,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':1.2,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.5,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.3,'Venus/Zon':0.2,'Mars/Zon':0.4,'Jupiter/Zon':0.2,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.1,'Neptunus/Zon':0.0},
+    note:'BTC: Jupiter & Uranus disruptie. Experimenteel.'},
+  SPX:{
+    long:{'Maan/Zon':0.4,'Mercurius/Zon':0.3,'Venus/Zon':0.6,'Mars/Zon':0.9,'Jupiter/Zon':1.0,'Jupiter/Saturn':1.5,'Saturn/Zon':1.1,'Uranus/Zon':0.4,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':1.4,'Mercurius/Zon':1.0,'Venus/Zon':0.5,'Mars/Zon':1.2,'Jupiter/Zon':0.5,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.1,'Venus/Zon':0.3,'Mars/Zon':0.5,'Jupiter/Zon':0.2,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.1,'Neptunus/Zon':0.0},
+    note:'SPX: Jupiter/Saturn (Merriman). Mars voor korte volatiliteit.'},
+  DXY:{
+    long:{'Maan/Zon':0.3,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':0.7,'Jupiter/Saturn':1.0,'Saturn/Zon':1.5,'Uranus/Zon':0.6,'Neptunus/Zon':0.5},
+    short:{'Maan/Zon':1.2,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':0.9,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.6,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},
+    weekly:{'Maan/Zon':1.8,'Mercurius/Zon':1.3,'Venus/Zon':0.3,'Mars/Zon':0.4,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.0},
+    note:'Dollar: Saturn dominant. Traagste cyclus-response.'},
+  WTI:{
+    long:{'Maan/Zon':0.5,'Mercurius/Zon':0.3,'Venus/Zon':0.4,'Mars/Zon':1.6,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.8,'Saturn/Zon':0.7,'Uranus/Zon':0.4,'Neptunus/Zon':0.6},
+    short:{'Maan/Zon':1.3,'Mercurius/Zon':0.8,'Venus/Zon':0.3,'Mars/Zon':1.8,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.3},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.0,'Venus/Zon':0.2,'Mars/Zon':0.6,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.1},
+    note:'WTI: Mars energie-cyclus dominant.'},
+  COPPER:{
+    long:{'Maan/Zon':0.7,'Mercurius/Zon':0.2,'Venus/Zon':1.0,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.6,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':1.4,'Mercurius/Zon':0.5,'Venus/Zon':0.5,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.2,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.0,'Venus/Zon':0.3,'Mars/Zon':0.5,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.0},
+    note:'Koper: industrieel metaal. Mars & Venus dominant. Jupiter/Saturn als langetermijn achtergrond.'},
 };
 
-const SEAS_DATA={
-  XAU:{5:[.45,.52,.48,.40,.36,.38,.54,.70,.74,.62,.50,.44],10:[.44,.51,.49,.42,.37,.39,.53,.68,.72,.61,.51,.46],20:[.43,.50,.47,.41,.36,.38,.51,.67,.71,.60,.49,.44],30:[.42,.49,.46,.40,.35,.37,.50,.66,.70,.59,.48,.43]},
-  XAG:{5:[.40,.50,.58,.50,.36,.33,.44,.64,.67,.60,.48,.40],10:[.41,.51,.56,.49,.35,.32,.43,.63,.66,.59,.47,.41],20:[.40,.49,.54,.48,.34,.31,.42,.62,.65,.58,.46,.40],30:[.39,.48,.53,.47,.33,.30,.41,.61,.64,.57,.45,.39]},
-  BTC:{5:[.65,.60,.54,.46,.33,.30,.44,.62,.53,.72,.74,.68],10:[.62,.58,.52,.44,.32,.29,.42,.60,.52,.70,.72,.66]},
-  SPX:{5:[.54,.59,.61,.57,.51,.46,.49,.41,.36,.47,.62,.64],10:[.53,.58,.60,.56,.50,.45,.48,.40,.35,.46,.61,.63],20:[.52,.57,.59,.55,.49,.44,.47,.39,.34,.45,.60,.62],30:[.51,.56,.58,.54,.48,.43,.46,.38,.33,.44,.59,.61]},
-  DXY:{5:[.52,.47,.40,.36,.42,.54,.57,.51,.60,.56,.47,.50],10:[.51,.46,.39,.35,.41,.53,.56,.50,.59,.55,.46,.49],20:[.50,.45,.38,.34,.40,.52,.55,.49,.58,.54,.45,.48],30:[.49,.44,.37,.33,.39,.51,.54,.48,.57,.53,.44,.47]},
-  WTI:{5:[.43,.51,.57,.62,.64,.60,.54,.47,.40,.38,.36,.40],10:[.44,.52,.56,.61,.63,.59,.53,.46,.39,.37,.35,.41],20:[.43,.51,.55,.60,.62,.58,.52,.45,.38,.36,.34,.40],30:[.42,.50,.54,.59,.61,.57,.51,.44,.37,.35,.33,.39]},
-  COPPER:{5:[.41,.47,.52,.58,.62,.55,.48,.44,.42,.46,.50,.45],10:[.42,.48,.53,.57,.61,.54,.47,.43,.41,.45,.49,.44]},
-};
+// Seasonality wordt live berekend vanuit D.ohlc
+let SEAS_CACHE={}; // cache per asset
+
+function calcSeasonality(asset, years){
+  const key=`${asset}_${years}`;
+  if(SEAS_CACHE[key])return SEAS_CACHE[key];
+
+  const rows=D.ohlc?.[asset]||[];
+  if(rows.length<60)return null;
+
+  const cutoff=new Date();
+  cutoff.setFullYear(cutoff.getFullYear()-years);
+  const cutoffStr=cutoff.toISOString().slice(0,10);
+
+  // Bouw maandelijkse returns per maand
+  const monthReturns=[[], [], [], [], [], [], [], [], [], [], [], []];
+
+  // Sorteer op datum
+  const sorted=[...rows].filter(r=>r.date>=cutoffStr).sort((a,b)=>a.date.localeCompare(b.date));
+  if(sorted.length<20)return null;
+
+  // Bereken maandelijkse return per kalendermaand
+  // Groepeer closes per jaar/maand
+  const byMonth={};
+  sorted.forEach(r=>{
+    const[y,m]=r.date.split('-');
+    const k=`${y}-${m}`;
+    if(!byMonth[k])byMonth[k]={closes:[],month:parseInt(m)-1,year:parseInt(y)};
+    byMonth[k].closes.push(r.close);
+  });
+
+  // Per maand: return = (laatste close - eerste close) / eerste close
+  Object.values(byMonth).forEach(({closes,month})=>{
+    if(closes.length<5)return; // te weinig data
+    const ret=(closes[closes.length-1]-closes[0])/closes[0];
+    monthReturns[month].push(ret);
+  });
+
+  // Gemiddelde per maand, omgezet naar 0..1 schaal (0.5 = neutraal)
+  const result=monthReturns.map(rets=>{
+    if(rets.length===0)return 0.5;
+    const avg=rets.reduce((s,v)=>s+v,0)/rets.length;
+    // Schaal: +10% = 1.0, -10% = 0.0, 0% = 0.5
+    return Math.max(0,Math.min(1, 0.5 + avg*5));
+  });
+
+  SEAS_CACHE[key]=result;
+  return result;
+}
+
 const SEAS_AVAIL={XAU:[5,10,20,30],XAG:[5,10,20,30],BTC:[5,10],SPX:[5,10,20,30],DXY:[5,10,20,30],WTI:[5,10,20,30],COPPER:[5,10]};
 
 let activeAsset='XAU',activeModel='long',activeView='composite',activeSeasYears=10;
@@ -526,7 +614,8 @@ function setAsset(a){
 let currentWeights={};
 let currentPhases={};   // fase verschuiving in dagen per planeetpaar
 let activePresetName='astronomisch';
-let showMoon=true,showAspects=true,showRetro=true,showComps=true,showProjection=true;
+let showMoon=true,showAspects=true,showRetro=true,showComps=true,showProjection=true,showSpiral=false;
+let spiralAnchor=null; // {date, type} — null = automatisch
 let mainChart=null,compChart=null;
 
 // Fase-presets per asset: astronomisch=0, geoptimaliseerd=empirisch, momentum=versneld
@@ -577,6 +666,12 @@ function setModel(m){
   activeModel=m;
   document.getElementById('mswL').classList.toggle('active',m==='long');
   document.getElementById('mswS').classList.toggle('active',m==='short');
+  document.getElementById('mswW').classList.toggle('active',m==='weekly');
+  // Weekly: standaard kortere tijdvenster
+  if(m==='weekly'){
+    const sel=document.getElementById('periodSel');
+    if(sel.value==='1095'||sel.value==='730')sel.value='180';
+  }
   loadPreset();
 }
 function setView(v){
@@ -812,21 +907,91 @@ function updateWeight(planets,val){
   render();
 }
 
-function renderSeasonality(asset,years){
+// === SPIRAL CALENDAR (Carolan) ===
+const LUNAR_MONTH = 29.5306; // synodische maanmaand in dagen
+const PHI = 1.6180339887;
+// Fibonacci-machten van de maanmaand
+const SPIRAL_INTERVALS = [0,1,2,3,5,8,13,21,34,55,89].map(n=>
+  Math.round(LUNAR_MONTH * Math.pow(PHI, n))
+);
+
+function getSpiralDates(anchorDate, rangeStart, rangeEnd){
+  // Bereken alle Spiral Calendar projectie-datums vanuit een anker
+  const anchor = new Date(anchorDate);
+  const results = [];
+  SPIRAL_INTERVALS.forEach(days=>{
+    if(days===0)return;
+    [1,-1].forEach(dir=>{
+      const d = new Date(anchor);
+      d.setDate(d.getDate() + dir*days);
+      const ds = d.toISOString().slice(0,10);
+      if(ds >= rangeStart && ds <= rangeEnd){
+        results.push({date:ds, days:days, dir:dir>0?'toekomst':'verleden'});
+      }
+    });
+  });
+  return results;
+}
+
+function findAutoAnchor(asset){
+  // Automatisch anker: grootste historische draaipunt uit OHLC
+  const rows = D.ohlc?.[asset]||[];
+  if(rows.length<30)return TODAY;
+  // Zoek absolute high en low in laatste 2 jaar
+  const cutoff = new Date(TODAY);
+  cutoff.setFullYear(cutoff.getFullYear()-2);
+  const cutStr = cutoff.toISOString().slice(0,10);
+  const recent = rows.filter(r=>r.date>=cutStr);
+  if(!recent.length)return TODAY;
+  let maxV=-Infinity,minV=Infinity,maxD='',minD='';
+  recent.forEach(r=>{
+    if(r.close>maxV){maxV=r.close;maxD=r.date;}
+    if(r.close<minV){minV=r.close;minD=r.date;}
+  });
+  // Kies meest recente van top/bodem
+  return maxD>minD?maxD:minD;
+}
+
+function renderSpiralToggle(){
+  const el=document.getElementById('spiralToggle');
+  if(!el)return;
+  el.style.background=showSpiral?'var(--purple)22':'';
+  el.style.borderColor=showSpiral?'var(--purple)':'var(--border)';
+  el.style.color=showSpiral?'var(--purple)':'var(--muted)';
+}
+
+function toggleSpiral(){
+  showSpiral=!showSpiral;
+  renderSpiralToggle();
+  render();
+}
+
+function setSpiralAnchor(date){
+  spiralAnchor=date||null;
+  render();
+}
   const avail=SEAS_AVAIL[asset]||[5,10];
+  const yearNow=new Date().getFullYear();
+
   document.getElementById('yearBtns').innerHTML=avail.map(y=>{
-    const data=SEAS_DATA[asset]?.[y];
-    const na=!data;
-    return `<button class="yr-btn${y===years?' active':''}" onclick="setSeasYears(${y})" ${na?'disabled':''} style="${na?'opacity:.3;cursor:not-allowed':''}">
+    const startYear=yearNow-y;
+    const hasData=(D.ohlc?.[asset]||[]).some(r=>r.date.startsWith(String(startYear)));
+    return `<button class="yr-btn${y===years?' active':''}" onclick="setSeasYears(${y})" ${!hasData?'disabled style="opacity:.3;cursor:not-allowed"':''}>
       ${y}j</button>`;
   }).join('');
-  const data=SEAS_DATA[asset]?.[years];
-  const yearNow=new Date().getFullYear();
+
+  const data=calcSeasonality(asset,years);
   const startYear=yearNow-years;
+
   document.getElementById('seasSource').textContent=data
-    ?`${years} jaar gemiddelde (${startYear}–${yearNow}) — ${years>=20?'Robuust':years>=10?'Redelijke steekproef':'Kleine steekproef, indicatief'}`
-    :`Geen ${years}-jaar data voor ${asset}`;
-  if(!data){document.getElementById('seasonalityBars').innerHTML=`<div style="font-size:9px;color:var(--muted);padding:6px 0">Niet beschikbaar.</div>`;return;}
+    ?`${years} jaar gemiddelde (${startYear}–${yearNow}) — berekend uit CSV · ${years>=20?'Robuust':years>=10?'Redelijke steekproef':'Kleine steekproef, indicatief'}`
+    :`Onvoldoende data voor ${years} jaar`;
+
+  if(!data){
+    document.getElementById('seasonalityBars').innerHTML=`<div style="font-size:9px;color:var(--muted);padding:6px 0">Laden... of onvoldoende historische data.</div>`;
+    return;
+  }
+
   const curM=new Date().getMonth();
   document.getElementById('seasonalityBars').innerHTML=data.map((v,i)=>{
     const bull=v>=.5,pct=Math.abs(Math.round((v-.5)*200)),col=bull?'#3ec87a':'#e8556a';
@@ -849,7 +1014,7 @@ function renderMetrics(asset,start,end,composite){
   const cur=composite[li];
   const phase=cur>.28?'▲ Bullish':cur<-.28?'▼ Bearish':'— Neutraal';
   const phCol=cur>.28?'#3ec87a':cur<-.28?'#e8556a':'#8890aa';
-  const wnd=activeModel==='long'?14:5;
+  const wnd=activeModel==='long'?14:activeModel==='weekly'?7:5;
   const turns=confluenceSeries(composite,wnd);
   const next=turns.find(t=>(t.i+start)>ti);
   const nextDate=next?D.dates[next.i+start]:'–';
@@ -859,7 +1024,7 @@ function renderMetrics(asset,start,end,composite){
   document.getElementById('metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Asset · Model</div>
       <div class="metric-val" style="color:${ASSET_COLORS[asset]};font-size:14px">${asset}</div>
-      <div class="metric-sub">${activeModel==='long'?'Long term':'Short term'}</div></div>
+      <div class="metric-sub">${activeModel==='long'?'Long term':activeModel==='weekly'?'Weekly swing':'Short term'}</div></div>
     <div class="metric"><div class="metric-label">Cyclische fase</div>
       <div class="metric-val" style="color:${phCol};font-size:13px">${phase}</div>
       <div class="metric-sub">Index: ${cur>=0?'+':''}${cur.toFixed(3)}</div></div>
@@ -972,6 +1137,43 @@ const markerPlugin={
           ctx.restore();
         }
       });
+    }
+    // === SPIRAL CALENDAR LIJNEN ===
+    if(showSpiral){
+      const anchor = spiralAnchor || findAutoAnchor(activeAsset);
+      document.getElementById('spiralAnchorLabel').textContent =
+        `Anker: ${anchor} ${spiralAnchor?'(handmatig)':'(auto)'}`;
+      document.getElementById('spiralPanel').style.display='';
+      const spiralDates = getSpiralDates(anchor, dates[0], dates[dates.length-1]);
+      spiralDates.forEach(sp=>{
+        const idx = D.dates.indexOf(sp.date);
+        if(idx<ws||idx>=we)return;
+        const x = scales.x.getPixelForValue(idx-ws);
+        if(x<chartArea.left||x>chartArea.right)return;
+        const isFut = sp.date >= TODAY;
+        ctx.save();
+        ctx.strokeStyle = isFut ? 'rgba(157,111,245,0.6)' : 'rgba(157,111,245,0.25)';
+        ctx.lineWidth = isFut ? 1.5 : 1;
+        ctx.setLineDash([4,3]);
+        ctx.beginPath();
+        ctx.moveTo(x, chartArea.top);
+        ctx.lineTo(x, chartArea.bottom);
+        ctx.stroke();
+        // Label: Fibonacci interval
+        if(isFut){
+          ctx.save();
+          ctx.translate(x+3, chartArea.top+12);
+          ctx.rotate(Math.PI/2);
+          ctx.font='7px monospace';
+          ctx.fillStyle='rgba(157,111,245,0.8)';
+          ctx.fillText(`φ ${sp.days}d`,0,0);
+          ctx.restore();
+        }
+        ctx.restore();
+      });
+    } else {
+      document.getElementById('spiralPanel').style.display='none';
+      document.getElementById('spiralAnchorLabel').textContent='';
     }
     ctx.restore();
   }
@@ -1203,8 +1405,8 @@ function renderCharts(asset,start,end,modelData){
   document.getElementById('mainTitle').textContent=activeView==='backtest'
     ?`Backtest · ${asset} Koers + Composite Wave`
     :showProjection
-      ?`Composite + Prijs-Projectie · ${activeModel==='long'?'LT':'ST'} · ${asset}`
-      :`Composite · ${activeModel==='long'?'Long Term':'Short Term'} · ${asset} · −1.0 (bearish) → +1.0 (bullish)`;
+      ?`Composite + Prijs-Projectie · ${activeModel==='long'?'LT':activeModel==='weekly'?'WK':'ST'} · ${asset}`
+      :`Composite · ${activeModel==='long'?'Long Term':activeModel==='weekly'?'Weekly Swing':'Short Term'} · ${asset} · −1.0 (bearish) → +1.0 (bullish)`;
 }
 
 const EVENT_UITLEG={
@@ -1256,7 +1458,7 @@ function renderSidebar(start,end,modelData){
       <div class="ei-sub">${ev.cat==='moon'?applyTz(ev.time):(ev.planets||'')+(ev.time?' · '+applyTz(ev.time):'')}</div>
       <span class="tip">${evTip(ev)}</span>
     </div>`).join('');
-  const wnd=activeModel==='long'?14:5;
+  const wnd=activeModel==='long'?14:activeModel==='weekly'?7:5;
   const turns=confluenceSeries(modelData.composite,wnd);
   lastTurningPoints=turns.map(tp=>({...tp,date:D.dates[tp.i+start]}));
   document.getElementById('turningList').innerHTML=turns.slice(0,10).map(tp=>{
@@ -1280,6 +1482,7 @@ function renderSidebar(start,end,modelData){
 }
 
 function renderToggles(){
+  renderSpiralToggle();
   document.getElementById('toggles').innerHTML=[
     ['tMoon',showMoon,'Maanfasen'],['tAsp',showAspects,'Planetaire aspecten'],
     ['tRetro',showRetro,'Retrograde'],['tComp',showComps,'Componenten grafiek'],
@@ -1293,13 +1496,13 @@ function renderToggles(){
 }
 
 function renderUitleg(asset, modelData, start, end){
-  const fase=activeModel==='long'?'Long Term':'Short Term';
+  const fase=activeModel==='long'?'Long Term':activeModel==='weekly'?'Weekly Swing':'Short Term';
   const preset=activePresetName.charAt(0).toUpperCase()+activePresetName.slice(1);
   const ti=todayIdx();
   const li=Math.min(Math.max(ti-start,0),modelData.composite.length-1);
   const cur=modelData.composite[li];
   const fase_str=cur>.28?'bullish (stijgend)':cur<-.28?'bearish (dalend)':'neutraal (zijwaarts)';
-  const wnd=activeModel==='long'?14:5;
+  const wnd=activeModel==='long'?14:activeModel==='weekly'?7:5;
   const turns=confluenceSeries(modelData.composite,wnd);
   const next=turns.find(t=>(t.i+start)>ti);
   const nextDate=next?D.dates[next.i+start]:'onbekend';
