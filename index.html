@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyclisch Marktmodel v10 — Fase-ijking</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#12141a; --surface:#1a1d26; --surface2:#1f2230;
+  --border:#2a2f42; --border2:#363d55;
+  --text:#eef0f6; --muted:#8890aa; --muted2:#aab0c8;
+  --accent:#5b8af5; --gold:#d4a843; --green:#3ec87a; --red:#e8556a;
+  --purple:#9d6ff5; --orange:#f7a030; --cyan:#38bcd4;
+  --fs:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'SF Mono','Fira Code',monospace;font-size:var(--fs);min-height:100vh;overflow:hidden;}
+.header{padding:9px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.header h1{font-size:12px;font-weight:600;color:#fff;letter-spacing:.12em;text-transform:uppercase;}
+.header-meta{font-size:10px;color:var(--muted2);display:flex;gap:14px;align-items:center;}
+.badge{font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid;}
+.badge-blue{background:#5b8af518;border-color:#5b8af535;color:#7ba8f8;}
+.badge-gold{background:#d4a84318;border-color:#d4a84335;color:#d4a843;}
+
+.controls{padding:7px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.asset-tabs{display:flex;gap:3px;}
+.tab{padding:4px 12px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;background:transparent;color:var(--muted2);transition:all .12s;}
+.tab.active{color:#fff;border-color:var(--tab-color,var(--accent));background:color-mix(in srgb,var(--tab-color,var(--accent)) 18%,transparent);}
+.ctrl-group{display:flex;align-items:center;gap:6px;}
+.ctrl-label{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;}
+select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:3px;font-family:inherit;font-size:11px;}
+.model-sw{display:flex;gap:2px;}
+.msw{padding:3px 10px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--muted2);}
+.msw.active{background:var(--surface2);color:var(--text);}
+.view-sw{display:flex;gap:2px;}
+.vsw{padding:3px 10px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--muted2);}
+.vsw.active{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);border-color:var(--accent);}
+
+.app{display:grid;grid-template-columns:var(--left-w,210px) 4px 1fr 4px var(--right-w,210px);height:calc(100vh - 72px);overflow:hidden;}
+.resize-handle{background:var(--border);cursor:col-resize;transition:background .2s;z-index:10;}
+.resize-handle:hover,.resize-handle.dragging{background:var(--accent);}
+.left-panel{width:100%;overflow-y:auto;overflow-x:hidden;}
+.right-panel{width:100%;overflow-y:auto;overflow-x:hidden;}
+
+/* LEFT */
+.left-panel{border-right:1px solid var(--border);overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:12px;}
+.panel-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.reset-btn{font-size:9px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
+.weight-item{margin-bottom:9px;}
+.weight-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
+.weight-name{font-size:10px;font-weight:500;}
+.weight-tag{font-size:8px;color:var(--muted);padding:1px 4px;background:var(--surface2);border-radius:2px;}
+.weight-val{font-size:11px;font-weight:700;color:var(--text);min-width:28px;text-align:right;}
+.weight-desc{font-size:8px;color:var(--muted);margin-bottom:3px;}
+.corr-row{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+.corr-bar-bg{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.corr-fill{height:100%;border-radius:2px;}
+.corr-val{font-size:8px;width:36px;text-align:right;}
+input[type=range]{width:100%;height:3px;-webkit-appearance:none;appearance:none;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;cursor:pointer;}
+.wbar-bg{height:2px;background:var(--border);border-radius:1px;margin-top:3px;}
+.wbar-fill{height:100%;border-radius:1px;transition:width .2s;}
+.preset-note{font-size:9px;color:var(--muted2);line-height:1.5;padding:6px 8px;background:var(--surface2);border-radius:3px;border-left:2px solid var(--border2);}
+.opt-btn{width:100%;padding:5px;border:1px solid var(--accent);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--accent);margin-top:6px;}
+.opt-btn:hover{background:color-mix(in srgb,var(--accent) 15%,transparent);}
+
+/* SEAS */
+.seas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.seas-year-sel{display:flex;gap:3px;flex-wrap:wrap;}
+.yr-btn{font-size:9px;padding:2px 6px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;background:transparent;color:var(--muted2);}
+.yr-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+.seas-source{font-size:8px;color:var(--muted);margin-bottom:5px;line-height:1.4;}
+.seas-bar{display:flex;align-items:center;gap:5px;margin-bottom:3px;}
+.seas-month{font-size:10px;color:var(--muted2);width:26px;text-align:right;}
+.seas-track{flex:1;height:7px;background:var(--border);border-radius:3px;overflow:hidden;position:relative;}
+.seas-mid{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--border2);}
+.seas-fill-pos{position:absolute;left:50%;height:100%;border-radius:0 2px 2px 0;}
+.seas-fill-neg{position:absolute;right:50%;height:100%;border-radius:2px 0 0 2px;}
+.seas-val{font-size:10px;font-weight:600;width:36px;}
+.seas-cur{outline:1px solid var(--muted2);border-radius:2px;}
+.toggle-row{display:flex;flex-direction:column;gap:5px;}
+.toggle{display:flex;align-items:center;gap:6px;cursor:pointer;}
+.toggle input{accent-color:var(--accent);}
+.toggle span{font-size:10px;color:var(--muted2);}
+
+/* MAIN */
+.main{padding:10px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:9px 11px;}
+.metric-label{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.metric-val{font-size:16px;font-weight:600;color:#fff;line-height:1.1;}
+.metric-sub{font-size:9px;color:var(--muted2);margin-top:3px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:10px 13px;}
+.chart-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;flex-wrap:wrap;gap:5px;}
+.chart-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);}
+.legend{display:flex;gap:10px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted2);}
+.leg-line{width:14px;height:2px;border-radius:1px;}
+.conf-bar-bg{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin:5px 0 3px;}
+.conf-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+.conf-labels{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);}
+.conf-detail{font-size:9px;color:var(--muted2);margin-top:4px;line-height:1.5;}
+
+/* Y-AXIS LABELS */
+.y-axis-left{display:flex;flex-direction:column;justify-content:space-between;padding:4px 0;min-width:36px;text-align:right;}
+.y-axis-right{display:flex;flex-direction:column;justify-content:space-between;padding:4px 0;min-width:62px;}
+.y-label{font-size:9px;line-height:1;}
+
+/* RIGHT */
+.right-panel{border-left:1px solid var(--border);overflow-y:auto;}
+.sb-section{padding:10px 12px;border-bottom:1px solid var(--border);}
+.sb-title{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:8px;}
+.event-item{padding:6px 8px;margin-bottom:4px;border-radius:3px;background:var(--bg);border-left:2px solid var(--border2);}
+.ei-date{font-size:9px;color:var(--muted2);}
+.ei-name{font-size:11px;color:var(--text);margin-top:1px;}
+.ei-sub{font-size:9px;color:var(--muted);}
+.kp-item{padding:6px 8px;margin-bottom:4px;border-radius:3px;background:var(--bg);}
+.kp-bar{height:2px;border-radius:1px;margin-top:4px;background:var(--border);}
+.retro-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:9px;}
+.retro-R{color:var(--red);} .retro-D{color:var(--green);}
+
+/* BACKTEST */
+.phase-row{display:flex;align-items:center;gap:4px;margin-top:2px;}
+.phase-label{font-size:8px;color:var(--muted);width:22px;}
+.phase-val{font-size:9px;font-weight:600;width:28px;text-align:right;}
+.phase-track{flex:1;position:relative;height:3px;background:var(--border2);border-radius:2px;}
+.opt-phase-btn{width:100%;padding:5px;border:1px solid var(--purple);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:transparent;color:var(--purple);margin-top:4px;}
+.opt-phase-btn:hover{background:color-mix(in srgb,var(--purple) 15%,transparent);}
+.preset-btns{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;}
+.preset-btn{font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;font-family:inherit;background:transparent;color:var(--muted2);}
+.preset-btn.active{background:var(--surface2);color:var(--text);border-color:var(--accent);}
+.opt-running{color:var(--orange);font-size:9px;margin-top:4px;display:none;}
+.corr-card{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:7px 10px;}
+.corr-card-label{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.corr-card-val{font-size:15px;font-weight:700;}
+/* Hover tooltips */
+.tip{display:none;position:absolute;z-index:99;right:0;top:100%;margin-top:4px;background:#1a1d26;border:1px solid #2a2f42;border-radius:4px;padding:7px 10px;font-size:9px;color:#aab0c8;line-height:1.6;width:220px;pointer-events:none;box-shadow:0 4px 16px #0006;}
+.event-item{position:relative;cursor:help;}
+.event-item:hover .tip{display:block;}
+.cml-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted2);cursor:help;position:relative;}
+.cml-item:hover .tip{display:block;}
+.cml-item .tip{left:0;right:auto;width:200px;}
+.chart-markers-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+.view-info-btn{font-size:9px;color:var(--muted);cursor:help;position:relative;padding:2px 7px;border:1px solid var(--border);border-radius:3px;margin-left:4px;}
+.view-info-btn:hover .tip{display:block;}
+.view-info-btn .tip{right:0;left:auto;width:240px;}
+/* Info Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:200;backdrop-filter:blur(3px);}
+.modal-overlay.open{display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:8px;width:min(860px,95vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px #0009;}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-header h2{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text);}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.modal-tabs{display:flex;gap:2px;padding:8px 14px 0;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.modal-tab{padding:5px 14px;font-size:10px;font-family:monospace;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.modal-body{overflow-y:auto;padding:18px;flex:1;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.info-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px;position:relative;}
+.info-card-icon{font-size:22px;margin-bottom:8px;}
+.info-card-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:.05em;}
+.info-card-period{font-size:9px;color:var(--accent);background:var(--accent)15;padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:8px;}
+.info-card-body{font-size:10px;color:var(--muted2);line-height:1.75;}
+.info-card-body strong{color:var(--text);}
+.info-card-markets{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.mkt-tag{font-size:8px;padding:2px 7px;border-radius:10px;border:1px solid;}
+.info-section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.info-table{width:100%;border-collapse:collapse;font-size:10px;}
+.info-table th{text-align:left;color:var(--muted);font-weight:600;padding:5px 8px;border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:.07em;}
+.info-table td{padding:7px 8px;border-bottom:1px solid var(--border)15;color:var(--muted2);vertical-align:top;}
+.info-table tr:hover td{background:var(--surface2);}
+.info-table td:first-child{color:var(--text);font-weight:600;}
+.aspect-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+.info-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border:1px solid var(--border2);border-radius:4px;background:none;color:var(--muted2);font-size:10px;font-family:monospace;cursor:pointer;transition:all .15s;}
+.info-btn:hover{border-color:var(--accent);color:var(--accent);}
+.how-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.how-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent)22;border:1px solid var(--accent)44;color:var(--accent);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.how-step-body{font-size:10px;color:var(--muted2);line-height:1.7;}
+.how-step-body strong{color:var(--text);}
+.composite-viz{background:var(--surface2);border-radius:6px;padding:14px;margin:12px 0;}
+.composite-bar{height:12px;border-radius:6px;margin:4px 0;position:relative;overflow:hidden;}
+.composite-fill{height:100%;border-radius:6px;transition:width .3s;}
+.slider-row{display:flex;align-items:center;gap:4px;}
+.slider-btn{width:16px;height:16px;border:1px solid var(--border2);border-radius:3px;background:var(--surface2);color:var(--muted2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0;}
+.slider-btn:hover{border-color:var(--accent);color:var(--accent);}
+.comp-separator{border:none;border-top:1px solid var(--border);margin:8px 0 4px;}
+.tz-select{font-size:9px;padding:2px 5px;background:var(--surface2);color:var(--muted2);border:1px solid var(--border);border-radius:3px;font-family:monospace;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&#9789; Cyclisch Marktmodel <span style="color:var(--muted);font-weight:400">v13</span></h1>
+  <div class="header-meta">
+    <span>Swiss Ephemeris · 2022–2028</span>
+    <span id="todayLabel"></span>
+    <span class="badge badge-gold" id="dataBadge">⟳ Live data laden...</span>
+    <span class="badge badge-blue">&#9670; Fase-ijking · Draaipunt optimalisatie</span>
+    <button class="info-btn" onclick="document.getElementById('infoModal').classList.add('open')">&#9432; Uitleg &amp; Planeten</button>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Asset</span>
+    <select id="assetSel" onchange="setAsset(this.value)" style="font-size:12px;padding:4px 8px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:4px;font-family:monospace;cursor:pointer;">
+      <option value="XAU">XAU — Goud</option>
+      <option value="XAG">XAG — Zilver</option>
+      <option value="BTC">BTC — Bitcoin</option>
+      <option value="SPX">SPX — S&amp;P 500</option>
+      <option value="DXY">DXY — Dollar Index</option>
+      <option value="WTI">WTI — Olie</option>
+      <option value="COPPER">COPPER — Koper</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Model</span>
+    <div class="model-sw">
+      <button class="msw active" id="mswL" onclick="setModel('long')">Long term</button>
+      <button class="msw" id="mswS" onclick="setModel('short')">Short term</button>
+      <button class="msw" id="mswW" onclick="setModel('weekly')">Weekly</button>
+    </div>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">View</span>
+    <div class="view-sw">
+      <button class="vsw active" id="vswC" onclick="setView('composite')">Composite</button>
+      <button class="vsw" id="vswB" onclick="setView('backtest')">Backtest</button>
+    </div>
+    <span class="view-info-btn">? Composite<span class="tip"><strong>Composite view</strong><br>Toont de gecombineerde cyclische kracht (−1 t/m +1). De witte lijn is de werkelijke koers. De gestippelde lijn is de cyclische prijsprojectie vooruit. Gebruik dit voor timing en toekomstprojectie.</span></span>
+    <span class="view-info-btn">? Backtest<span class="tip"><strong>Backtest view</strong><br>Legt de composite wave over de historische koers. Zo zie je hoe goed het model in het verleden werkte. Correlatie en richtingsnauwkeurigheid worden berekend op 5-daagse returns.</span></span>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Schaal</span>
+    <div class="view-sw">
+      <button class="vsw active" id="scaleLinear" onclick="setScale('linear')">Linear</button>
+      <button class="vsw" id="scaleLog" onclick="setScale('log')">Log</button>
+    </div>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Venster</span>
+    <select id="periodSel">
+      <option value="90">3 mnd</option>
+      <option value="180">6 mnd</option>
+      <option value="365" selected>1 jaar</option>
+      <option value="730">2 jaar</option>
+      <option value="1095">3 jaar</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Start</span>
+    <select id="startSel"></select>
+  </div>
+  <div class="ctrl-group" style="margin-left:auto;">
+    <span class="ctrl-label">Tekst</span>
+    <div style="display:flex;align-items:center;gap:5px;">
+      <span style="font-size:9px;color:var(--muted)">A</span>
+      <input type="range" id="fontSizeSlider" min="9" max="16" value="12" step="1"
+        style="width:70px;accent-color:var(--accent);"
+        oninput="setFontSize(parseInt(this.value))">
+      <span style="font-size:13px;color:var(--muted)">A</span>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- LEFT -->
+  <div class="left-panel" id="leftPanel">
+    <div>
+      <div class="panel-title">Cyclus Gewichten & Fase <button class="reset-btn" onclick="resetWeights()">↺ Reset</button></div>
+      <div class="preset-btns" id="presetBtns">
+        <button class="preset-btn active" onclick="loadNamedPreset('astronomisch')">Astronomisch</button>
+        <button class="preset-btn" onclick="loadNamedPreset('geoptimaliseerd')">Geoptimaliseerd</button>
+        <button class="preset-btn" onclick="loadNamedPreset('momentum')">Momentum</button>
+      </div>
+      <div id="weightSliders"></div>
+      <button class="opt-btn" id="optBtn" onclick="applyOptimized()">&#9660; Laad geoptimaliseerde gewichten</button>
+      <button class="opt-phase-btn" id="phaseOptBtn" onclick="optimizePhases()">&#9670; Optimaliseer fase op draaipunten</button>
+      <div class="opt-running" id="optRunning">⟳ Fase optimalisatie bezig...</div>
+      <div class="preset-note" id="presetNote" style="margin-top:8px;"></div>
+    </div>
+    <div>
+      <div class="panel-title">Weergave</div>
+      <div class="toggle-row" id="toggles"></div>
+      <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
+        <button id="spiralToggle" onclick="toggleSpiral()"
+          style="width:100%;padding:5px;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-family:monospace;font-size:9px;background:transparent;color:var(--muted);text-align:left;">
+          &#9432; Spiral Calendar (Carolan)
+        </button>
+        <div id="spiralPanel" style="display:none;margin-top:6px;">
+          <div style="font-size:8px;color:var(--muted);margin-bottom:4px;">Anker-draaipunt:</div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <input type="date" id="spiralAnchorInput"
+              style="flex:1;font-size:9px;padding:3px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:3px;font-family:monospace;"
+              onchange="setSpiralAnchor(this.value)">
+            <button onclick="setSpiralAnchor(null);document.getElementById('spiralAnchorInput').value=''"
+              style="font-size:9px;padding:3px 6px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--muted);cursor:pointer;">Auto</button>
+          </div>
+          <div id="spiralAnchorLabel" style="font-size:8px;color:var(--purple);margin-top:3px;"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-title">Seasonality</div>
+      <div class="seas-header">
+        <div class="seas-year-sel" id="yearBtns"></div>
+      </div>
+      <div class="seas-source" id="seasSource"></div>
+      <div id="seasonalityBars"></div>
+    </div>
+  </div>
+
+  <!-- RESIZE LEFT -->
+  <div class="resize-handle" id="resizeLeft"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="metrics" id="metrics"></div>
+
+    <!-- Confluence -->
+    <div class="chart-card" style="padding:9px 13px;" id="confPanel">
+      <div class="chart-top">
+        <span class="chart-title">Confluence Score</span>
+        <div style="display:flex;align-items:baseline;gap:5px;">
+          <span id="confScore" style="font-size:20px;font-weight:700;color:#fff">–</span>
+          <span style="font-size:9px;color:var(--muted2)">/ 100</span>
+        </div>
+      </div>
+      <div class="conf-bar-bg"><div class="conf-bar-fill" id="confFill"></div></div>
+      <div class="conf-labels"><span>0</span><span>Zwak 25</span><span>Matig 50</span><span>Sterk 75</span><span>100</span></div>
+      <div class="conf-detail" id="confDetail"></div>
+    </div>
+
+    <!-- Backtest stats (verborgen in composite view) -->
+    <div id="backtestStats" style="display:none;">
+      <div class="corr-summary" id="corrSummary"></div>
+    </div>
+
+    <!-- Main chart -->
+    <div class="chart-card" style="flex:2;min-height:280px;">
+      <div class="chart-top">
+        <span class="chart-title" id="mainTitle">Composite Cyclische Kracht</span>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:flex-start;">
+        <div class="y-axis-left" style="height:250px;" id="yAxisLeft">
+          <span class="y-label" style="color:var(--green)">+1.0</span>
+          <span class="y-label" style="color:var(--muted2)">+0.5</span>
+          <span class="y-label" style="color:var(--muted2)">0</span>
+          <span class="y-label" style="color:var(--muted2)">−0.5</span>
+          <span class="y-label" style="color:var(--red)">−1.0</span>
+        </div>
+        <div style="flex:1;position:relative;height:250px;">
+          <canvas id="mainChart" aria-label="Composite cyclische kracht"></canvas>
+        </div>
+        <div class="y-axis-right" style="height:250px;" id="yAxisRight">
+          <span class="y-label" style="color:var(--green)">Sterk bullish</span>
+          <span class="y-label" style="color:var(--muted2)">Zwak bullish</span>
+          <span class="y-label" style="color:var(--muted2)">Neutraal</span>
+          <span class="y-label" style="color:var(--muted2)">Zwak bearish</span>
+          <span class="y-label" style="color:var(--red)">Sterk bearish</span>
+        </div>
+      </div>
+      <div class="chart-markers-legend">
+        <span class="cml-item"><span style="color:rgba(240,192,80,.8);font-size:11px;">○</span> Volle Maan<span class="tip"><strong>Volle Maan</strong><br>Historisch een keerpunt in sentiment, met name voor goud en zilver. Gele stippellijn in grafiek.</span></span>
+        <span class="cml-item"><span style="color:rgba(120,120,120,.8);font-size:11px;">●</span> Nieuwe Maan<span class="tip"><strong>Nieuwe Maan</strong><br>Begin van nieuwe maancyclus (29,5d). Stil keerpunt — cyclisch relevant.</span></span>
+        <span class="cml-item"><span style="color:rgba(91,138,245,.9);font-weight:700;">|</span> Conjunctie<span class="tip"><strong>Conjunctie</strong><br>Twee planeten op dezelfde graad. Versterkt gecombineerde kracht. Blauwe lijn.</span></span>
+        <span class="cml-item"><span style="color:rgba(232,85,106,.9);font-weight:700;">|</span> Oppositie<span class="tip"><strong>Oppositie</strong><br>Twee planeten 180° tegenover elkaar. Spanningsmoment. Rode lijn.</span></span>
+        <span class="cml-item"><span style="color:rgba(232,85,106,.8);font-weight:700;">℞</span> Retrograde<span class="tip"><strong>Retrograde ℞</strong><br>Planeet lijkt achterwaarts te bewegen. Mercurius ℞ = vertraging/volatiliteit. Mars ℞ = energie-omslag. Staat onderaan grafiek op startdag.</span></span>
+        <span class="cml-item"><span style="color:rgba(62,200,122,.8);font-weight:700;">D</span> Direct<span class="tip"><strong>Direct D</strong><br>Planeet hervat voorwaartse beweging na retrograde. Vaak een opluchting- of herstelmoment.</span></span>
+        <span class="cml-item"><span style="color:rgba(91,138,245,.6);">▶</span> Vandaag<span class="tip"><strong>Vandaag</strong><br>Blauwe verticale lijn. Alles links = historisch. Alles rechts = cyclische projectie.</span></span>
+      </div>
+    </div>
+
+    <!-- Components chart -->
+    <hr class="comp-separator">
+    <div class="chart-card" style="min-height:155px;" id="compPanel">
+      <div class="chart-top">
+        <span class="chart-title">Cyclus Componenten — planeet · periode · gewicht</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <div class="y-axis-left" style="height:118px;">
+          <span class="y-label" style="color:var(--muted2)">+1</span>
+          <span class="y-label" style="color:var(--muted2)">0</span>
+          <span class="y-label" style="color:var(--muted2)">−1</span>
+        </div>
+        <div style="flex:1;position:relative;height:118px;">
+          <canvas id="compChart" aria-label="Cyclus componenten"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Uitleg paneel -->
+    <div class="chart-card" id="uitlegPanel" style="padding:12px 14px;">
+      <div class="chart-top" style="margin-bottom:10px;">
+        <span class="chart-title">&#9432; Modelonderbouwing &amp; Leeswijzer</span>
+        <span id="uitlegPreset" style="font-size:9px;color:var(--accent);padding:2px 8px;border:1px solid var(--accent)33;border-radius:10px;background:var(--accent)11;"></span>
+      </div>
+      <div id="uitlegTekst" style="font-size:10px;color:var(--muted2);line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;"></div>
+    </div>
+  </div>
+
+  <!-- RESIZE RIGHT -->
+  <div class="resize-handle" id="resizeRight"></div>
+
+  <!-- RIGHT -->
+  <div class="right-panel" id="rightPanel">
+    <div class="sb-section">
+      <div class="sb-title" style="display:flex;align-items:center;justify-content:space-between;">
+        Aankomende Events
+        <select class="tz-select" id="tzSel" onchange="setTimezone(this.value)">
+          <option value="0">UT/UTC</option>
+          <option value="1">CET (UTC+1)</option>
+          <option value="2">CEST (UTC+2)</option>
+          <option value="-5">EST (UTC−5)</option>
+          <option value="-4">EDT (UTC−4)</option>
+          <option value="8">CST China (UTC+8)</option>
+        </select>
+      </div>
+      <div id="eventList"></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">Keerpunten <span style="color:var(--accent)">◆</span> = toekomst</div>
+      <div id="turningList"></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">Retrograde</div>
+      <div id="retroList"></div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/data.js"></script>
+<script>
+// === LIVE CSV LOADER ===
+const CSV_URLS={
+  XAU:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/TVC_GOLD, 1D.csv',
+  XAG:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/TVC_SILVER, 1D.csv',
+  BTC:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/BITSTAMP_BTCUSD, 1D.csv',
+  SPX:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/TVC_SPX, 1D.csv',
+  DXY:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/TVC_DXY, 1D.csv',
+  WTI:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/BLACKBULL_WTI, 1D.csv',
+  COPPER:'https://cdn.jsdelivr.net/gh/TimTibbo/Cyclisch-model-data@main/Copper_1D.csv',
+};
+async function parseCSV(url){
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('CSV laden mislukt: '+url);
+  const text=await res.text();
+  return text.trim().split('\n').slice(1).map(row=>{
+    const[time,,,,close]=row.split(',');
+    const date=new Date(parseInt(time)*1000).toISOString().slice(0,10);
+    return{date,close:parseFloat(close)};
+  }).filter(r=>r.date&&!isNaN(r.close));
+}
+async function loadLiveOHLC(){
+  const badge=document.getElementById('dataBadge');
+  badge.textContent='⟳ Live data laden...';
+  try{
+    const entries=await Promise.all(Object.entries(CSV_URLS).map(async([asset,url])=>[asset,await parseCSV(url)]));
+    D.ohlc={};
+    entries.forEach(([a,rows])=>D.ohlc[a]=rows);
+    SEAS_CACHE={}; // reset cache zodat seasonality herberekend wordt
+    const latest=entries.map(([,rows])=>rows[rows.length-1]?.date||'').sort().pop();
+    badge.textContent=`✓ Live data t/m ${latest}`;
+    badge.style.borderColor='#3ec87a55';badge.style.color='#3ec87a';
+    render();
+  }catch(e){
+    badge.textContent='⚠ CSV laden mislukt';badge.style.color='#e8556a';
+    console.warn(e);
+  }
+}
+
+const COMPOSITE_COLOR='#d4a843'; // altijd goud
+const ASSET_COLORS={XAU:'#d4a843',XAG:'#9bbccc',BTC:'#f7a030',SPX:'#5b8af5',DXY:'#e8556a',WTI:'#3ec87a',COPPER:'#b87333'};
+const COMP_COLORS=['#5b8af5','#d4a843','#3ec87a','#9d6ff5','#e8556a','#f7a030','#38bcd4','#e8a0c8'];
+const MONTHS_NL=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+
+const CYCLE_META={
+  'Maan/Zon':      {period:29.5,  label:'Maan',     desc:'29.5 dagen — Maancyclus'},
+  'Mercurius/Zon': {period:115.9, label:'Mercurius', desc:'116 dagen — Mercurius synodisch'},
+  'Venus/Zon':     {period:583.9, label:'Venus',     desc:'584 dagen — Venus synodisch'},
+  'Mars/Zon':      {period:779.9, label:'Mars',      desc:'780 dagen — Mars synodisch'},
+  'Jupiter/Zon':   {period:398.9, label:'Jupiter',   desc:'399 dagen — Jupiter synodisch'},
+  'Jupiter/Saturn':{period:7253,  label:'J/Saturn',  desc:'~19.9 jaar — Grote Conjunctiecyclus'},
+  'Saturn/Zon':    {period:378.1, label:'Saturn',    desc:'378 dagen — Saturn synodisch'},
+  'Uranus/Zon':    {period:369.7, label:'Uranus',    desc:'370 dagen — Uranus synodisch'},
+  'Neptunus/Zon':  {period:367.5, label:'Neptunus',  desc:'368 dagen — Neptunus synodisch'},
+};
+
+const PRESETS={
+  XAU:{
+    long:{'Maan/Zon':0.4,'Mercurius/Zon':0.2,'Venus/Zon':1.4,'Mars/Zon':0.7,'Jupiter/Zon':0.9,'Jupiter/Saturn':1.5,'Saturn/Zon':1.0,'Uranus/Zon':0.3,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':1.8,'Mercurius/Zon':1.0,'Venus/Zon':0.9,'Mars/Zon':1.1,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.2,'Venus/Zon':0.4,'Mars/Zon':0.3,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.0},
+    note:'Goud: Venus & Jupiter/Saturn dominant (lang). Maan & Mars voor timing (kort).'},
+  XAG:{
+    long:{'Maan/Zon':0.8,'Mercurius/Zon':0.6,'Venus/Zon':1.0,'Mars/Zon':0.7,'Jupiter/Zon':0.8,'Jupiter/Saturn':1.2,'Saturn/Zon':0.8,'Uranus/Zon':0.3,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':2.0,'Mercurius/Zon':1.2,'Venus/Zon':0.6,'Mars/Zon':1.0,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.1,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.4,'Venus/Zon':0.3,'Mars/Zon':0.2,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.0},
+    note:'Zilver: sterkste Maan-correlatie. Mercurius voor volatiliteit.'},
+  BTC:{
+    long:{'Maan/Zon':0.5,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':1.4,'Jupiter/Saturn':1.0,'Saturn/Zon':0.9,'Uranus/Zon':1.2,'Neptunus/Zon':0.3},
+    short:{'Maan/Zon':1.5,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':1.2,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.5,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.3,'Venus/Zon':0.2,'Mars/Zon':0.4,'Jupiter/Zon':0.2,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.1,'Neptunus/Zon':0.0},
+    note:'BTC: Jupiter & Uranus disruptie. Experimenteel.'},
+  SPX:{
+    long:{'Maan/Zon':0.4,'Mercurius/Zon':0.3,'Venus/Zon':0.6,'Mars/Zon':0.9,'Jupiter/Zon':1.0,'Jupiter/Saturn':1.5,'Saturn/Zon':1.1,'Uranus/Zon':0.4,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':1.4,'Mercurius/Zon':1.0,'Venus/Zon':0.5,'Mars/Zon':1.2,'Jupiter/Zon':0.5,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.1,'Venus/Zon':0.3,'Mars/Zon':0.5,'Jupiter/Zon':0.2,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.1,'Neptunus/Zon':0.0},
+    note:'SPX: Jupiter/Saturn (Merriman). Mars voor korte volatiliteit.'},
+  DXY:{
+    long:{'Maan/Zon':0.3,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':0.7,'Jupiter/Saturn':1.0,'Saturn/Zon':1.5,'Uranus/Zon':0.6,'Neptunus/Zon':0.5},
+    short:{'Maan/Zon':1.2,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':0.9,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.6,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},
+    weekly:{'Maan/Zon':1.8,'Mercurius/Zon':1.3,'Venus/Zon':0.3,'Mars/Zon':0.4,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.0},
+    note:'Dollar: Saturn dominant. Traagste cyclus-response.'},
+  WTI:{
+    long:{'Maan/Zon':0.5,'Mercurius/Zon':0.3,'Venus/Zon':0.4,'Mars/Zon':1.6,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.8,'Saturn/Zon':0.7,'Uranus/Zon':0.4,'Neptunus/Zon':0.6},
+    short:{'Maan/Zon':1.3,'Mercurius/Zon':0.8,'Venus/Zon':0.3,'Mars/Zon':1.8,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.3},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.0,'Venus/Zon':0.2,'Mars/Zon':0.6,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.1},
+    note:'WTI: Mars energie-cyclus dominant.'},
+  COPPER:{
+    long:{'Maan/Zon':0.7,'Mercurius/Zon':0.2,'Venus/Zon':1.0,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.6,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},
+    short:{'Maan/Zon':1.4,'Mercurius/Zon':0.5,'Venus/Zon':0.5,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.2,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},
+    weekly:{'Maan/Zon':2.0,'Mercurius/Zon':1.0,'Venus/Zon':0.3,'Mars/Zon':0.5,'Jupiter/Zon':0.1,'Jupiter/Saturn':0.0,'Saturn/Zon':0.1,'Uranus/Zon':0.0,'Neptunus/Zon':0.0},
+    note:'Koper: industrieel metaal. Mars & Venus dominant. Jupiter/Saturn als langetermijn achtergrond.'},
+};
+
+// Seasonality wordt live berekend vanuit D.ohlc
+let SEAS_CACHE={}; // cache per asset
+
+function calcSeasonality(asset, years){
+  const key=`${asset}_${years}`;
+  if(SEAS_CACHE[key])return SEAS_CACHE[key];
+
+  const rows=D.ohlc?.[asset]||[];
+  if(rows.length<60)return null;
+
+  const cutoff=new Date();
+  cutoff.setFullYear(cutoff.getFullYear()-years);
+  const cutoffStr=cutoff.toISOString().slice(0,10);
+
+  // Bouw maandelijkse returns per maand
+  const monthReturns=[[], [], [], [], [], [], [], [], [], [], [], []];
+
+  // Sorteer op datum
+  const sorted=[...rows].filter(r=>r.date>=cutoffStr).sort((a,b)=>a.date.localeCompare(b.date));
+  if(sorted.length<20)return null;
+
+  // Bereken maandelijkse return per kalendermaand
+  // Groepeer closes per jaar/maand
+  const byMonth={};
+  sorted.forEach(r=>{
+    const[y,m]=r.date.split('-');
+    const k=`${y}-${m}`;
+    if(!byMonth[k])byMonth[k]={closes:[],month:parseInt(m)-1,year:parseInt(y)};
+    byMonth[k].closes.push(r.close);
+  });
+
+  // Per maand: return = (laatste close - eerste close) / eerste close
+  Object.values(byMonth).forEach(({closes,month})=>{
+    if(closes.length<5)return; // te weinig data
+    const ret=(closes[closes.length-1]-closes[0])/closes[0];
+    monthReturns[month].push(ret);
+  });
+
+  // Gemiddelde per maand, omgezet naar 0..1 schaal (0.5 = neutraal)
+  const result=monthReturns.map(rets=>{
+    if(rets.length===0)return 0.5;
+    const avg=rets.reduce((s,v)=>s+v,0)/rets.length;
+    // Schaal: +10% = 1.0, -10% = 0.0, 0% = 0.5
+    return Math.max(0,Math.min(1, 0.5 + avg*5));
+  });
+
+  SEAS_CACHE[key]=result;
+  return result;
+}
+
+const SEAS_AVAIL={XAU:[5,10,20,30],XAG:[5,10,20,30],BTC:[5,10],SPX:[5,10,20,30],DXY:[5,10,20,30],WTI:[5,10,20,30],COPPER:[5,10]};
+
+let activeAsset='XAU',activeModel='long',activeView='composite',activeSeasYears=10;
+let lastTurningPoints=[];
+let priceScale='linear'; // 'linear' of 'log'
+let activeFontSize=13;
+let activeTzOffset=0;
+
+function setTimezone(offset){
+  activeTzOffset=parseInt(offset);
+  render();
+}
+
+function setScale(s){
+  priceScale=s;
+  document.getElementById('scaleLinear').classList.toggle('active',s==='linear');
+  document.getElementById('scaleLog').classList.toggle('active',s==='log');
+  render();
+}
+
+function setFontSize(size){
+  document.documentElement.style.setProperty('--fs', size+'px');
+}
+
+function setAsset(a){
+  activeAsset=a;
+  const sel=document.getElementById('assetSel');
+  sel.style.color=ASSET_COLORS[a]||'var(--text)';
+  sel.style.borderColor=(ASSET_COLORS[a]||'var(--border2)')+'99';
+  const avail=SEAS_AVAIL[a]||[5,10];
+  if(!avail.includes(activeSeasYears))activeSeasYears=avail[avail.length-1];
+  loadPreset();
+}
+let currentWeights={};
+let currentPhases={};   // fase verschuiving in dagen per planeetpaar
+let activePresetName='astronomisch';
+let showMoon=true,showAspects=true,showRetro=true,showComps=true,showProjection=true,showSpiral=false;
+let spiralAnchor=null; // {date, type} — null = automatisch
+let mainChart=null,compChart=null;
+
+// Fase-presets per asset: astronomisch=0, geoptimaliseerd=empirisch, momentum=versneld
+const PHASE_PRESETS={
+  astronomisch:{note:'Pure astronomische fase — geen correctie.',phases:{}},
+  geoptimaliseerd:{note:'Fase geijkt op historische draaipunten XAU/XAG/BTC.',phases:{
+    XAU:{'Maan/Zon':-2,'Venus/Zon':8,'Mars/Zon':5,'Jupiter/Zon':12,'Jupiter/Saturn':20,'Saturn/Zon':7,'Uranus/Zon':3,'Mercurius/Zon':-1,'Neptunus/Zon':0},
+    XAG:{'Maan/Zon':-3,'Venus/Zon':6,'Mars/Zon':4,'Jupiter/Zon':10,'Jupiter/Saturn':18,'Saturn/Zon':6,'Uranus/Zon':2,'Mercurius/Zon':-2,'Neptunus/Zon':0},
+    BTC:{'Maan/Zon':1,'Venus/Zon':5,'Mars/Zon':7,'Jupiter/Zon':15,'Jupiter/Saturn':25,'Saturn/Zon':8,'Uranus/Zon':5,'Mercurius/Zon':2,'Neptunus/Zon':0},
+    SPX:{'Maan/Zon':0,'Venus/Zon':4,'Mars/Zon':6,'Jupiter/Zon':10,'Jupiter/Saturn':14,'Saturn/Zon':9,'Uranus/Zon':3,'Mercurius/Zon':1,'Neptunus/Zon':0},
+    DXY:{'Maan/Zon':-1,'Venus/Zon':3,'Mars/Zon':4,'Jupiter/Zon':8,'Jupiter/Saturn':12,'Saturn/Zon':11,'Uranus/Zon':4,'Mercurius/Zon':0,'Neptunus/Zon':0},
+    WTI:{'Maan/Zon':2,'Venus/Zon':5,'Mars/Zon':9,'Jupiter/Zon':7,'Jupiter/Saturn':10,'Saturn/Zon':6,'Uranus/Zon':3,'Mercurius/Zon':1,'Neptunus/Zon':0},
+    COPPER:{'Maan/Zon':1,'Mercurius/Zon':1,'Venus/Zon':4,'Mars/Zon':8,'Jupiter/Zon':5,'Jupiter/Saturn':15,'Saturn/Zon':5,'Uranus/Zon':3,'Neptunus/Zon':0},
+  }},
+  momentum:{note:'Fase vooruitgeschoven — detecteert vroegere draaipunten.',phases:{
+    XAU:{'Maan/Zon':-5,'Venus/Zon':14,'Mars/Zon':10,'Jupiter/Zon':20,'Jupiter/Saturn':35,'Saturn/Zon':12,'Uranus/Zon':6,'Mercurius/Zon':-3,'Neptunus/Zon':0},
+    XAG:{'Maan/Zon':-6,'Venus/Zon':12,'Mars/Zon':9,'Jupiter/Zon':18,'Jupiter/Saturn':30,'Saturn/Zon':11,'Uranus/Zon':5,'Mercurius/Zon':-4,'Neptunus/Zon':0},
+    BTC:{'Maan/Zon':3,'Venus/Zon':10,'Mars/Zon':14,'Jupiter/Zon':25,'Jupiter/Saturn':40,'Saturn/Zon':15,'Uranus/Zon':10,'Mercurius/Zon':4,'Neptunus/Zon':0},
+    SPX:{'Maan/Zon':-1,'Venus/Zon':8,'Mars/Zon':12,'Jupiter/Zon':18,'Jupiter/Saturn':22,'Saturn/Zon':16,'Uranus/Zon':6,'Mercurius/Zon':2,'Neptunus/Zon':0},
+    DXY:{'Maan/Zon':-3,'Venus/Zon':6,'Mars/Zon':8,'Jupiter/Zon':14,'Jupiter/Saturn':20,'Saturn/Zon':18,'Uranus/Zon':7,'Mercurius/Zon':1,'Neptunus/Zon':0},
+    WTI:{'Maan/Zon':4,'Venus/Zon':10,'Mars/Zon':16,'Jupiter/Zon':12,'Jupiter/Saturn':18,'Saturn/Zon':10,'Uranus/Zon':6,'Mercurius/Zon':2,'Neptunus/Zon':0},
+    COPPER:{'Maan/Zon':2,'Mercurius/Zon':2,'Venus/Zon':8,'Mars/Zon':14,'Jupiter/Zon':8,'Jupiter/Saturn':25,'Saturn/Zon':9,'Uranus/Zon':6,'Neptunus/Zon':0},
+  }},
+};
+
+const TODAY=new Date().toISOString().slice(0,10);
+document.getElementById('todayLabel').textContent='Vandaag: '+TODAY;
+const todayIdx=()=>{const i=D.dates.indexOf(TODAY);return i>=0?i:D.dates.length-100;};
+
+// Start dropdown
+const startSel=document.getElementById('startSel');
+D.dates.forEach((d,i)=>{
+  const[y,m]=d.split('-');
+  if(['01','04','07','10'].includes(m)&&d.endsWith('-01')){
+    const o=document.createElement('option');
+    o.value=i;o.textContent=`${y} K${Math.ceil(parseInt(m)/3)}`;
+    if(i<=todayIdx()&&todayIdx()-i<=365)o.selected=true;
+    startSel.appendChild(o);
+  }
+});
+
+function getWindow(){
+  const period=parseInt(document.getElementById('periodSel').value);
+  const start=parseInt(startSel.value);
+  return{start,end:Math.min(start+period,D.dates.length)};
+}
+function setModel(m){
+  activeModel=m;
+  document.getElementById('mswL').classList.toggle('active',m==='long');
+  document.getElementById('mswS').classList.toggle('active',m==='short');
+  document.getElementById('mswW').classList.toggle('active',m==='weekly');
+  // Weekly: standaard kortere tijdvenster
+  if(m==='weekly'){
+    const sel=document.getElementById('periodSel');
+    if(sel.value==='1095'||sel.value==='730')sel.value='180';
+  }
+  loadPreset();
+}
+function setView(v){
+  activeView=v;
+  document.getElementById('vswC').classList.toggle('active',v==='composite');
+  document.getElementById('vswB').classList.toggle('active',v==='backtest');
+  document.getElementById('confPanel').style.display=v==='composite'?'':'none';
+  document.getElementById('backtestStats').style.display=v==='backtest'?'':'none';
+  render();
+}
+function loadPreset(){
+  currentWeights={...PRESETS[activeAsset][activeModel]};
+  // Laad fases van actieve preset
+  const pp=PHASE_PRESETS[activePresetName]?.phases?.[activeAsset]||{};
+  const allPlanets=Object.keys(PRESETS[activeAsset][activeModel]);
+  currentPhases={};
+  allPlanets.forEach(p=>currentPhases[p]=pp[p]??0);
+  renderWeightSliders();render();
+}
+function resetWeights(){loadPreset();}
+
+function loadNamedPreset(name){
+  activePresetName=name;
+  document.querySelectorAll('.preset-btn').forEach(b=>{
+    b.classList.toggle('active',b.textContent.toLowerCase()===name);
+  });
+  const pp=PHASE_PRESETS[name]?.phases?.[activeAsset]||{};
+  Object.keys(currentPhases).forEach(p=>currentPhases[p]=pp[p]??0);
+  document.getElementById('presetNote').textContent=PHASE_PRESETS[name]?.note||'';
+  renderWeightSliders();render();
+}
+
+// Fase-optimalisatie: zoekt per cyclus de fase (−30..+30) die de beste
+// correlatie geeft tussen composite-draaipunten en OHLC-draaipunten
+async function optimizePhases(){
+  const ohlcRows=D.ohlc?.[activeAsset]||[];
+  if(ohlcRows.length<50){alert('Onvoldoende OHLC data voor optimalisatie.');return;}
+  const btn=document.getElementById('phaseOptBtn');
+  const running=document.getElementById('optRunning');
+  btn.disabled=true;running.style.display='block';
+
+  // Bouw OHLC map
+  const ohlcMap={};
+  ohlcRows.forEach(r=>ohlcMap[r.date]=r.close);
+
+  // Vind echte marktdraaipunten in historische OHLC
+  const histEnd=todayIdx();
+  const histStart=Math.max(0,histEnd-730); // max 2 jaar terug
+  const prices=D.dates.slice(histStart,histEnd).map(d=>ohlcMap[d]).filter(v=>v!==undefined&&!isNaN(v));
+  const wnd=7;
+  const mktTurns=[];
+  for(let i=wnd;i<prices.length-wnd;i++){
+    const sl=prices.slice(i-wnd,i+wnd+1),v=prices[i];
+    if(v===Math.max(...sl))mktTurns.push({i,type:'Top'});
+    else if(v===Math.min(...sl))mktTurns.push({i,type:'Bodem'});
+  }
+
+  const cfg=D.composites[activeAsset].components;
+  // Per component: zoek beste fase
+  await Promise.all(cfg.map(c=>new Promise(resolve=>{
+    setTimeout(()=>{
+      let bestPhase=0,bestScore=-Infinity;
+      for(let ph=-30;ph<=30;ph++){
+        // Bouw composite met alleen deze component op testfase
+        const slice=new Array(histEnd-histStart).fill(0).map((_,i)=>{
+          const srcIdx=histStart+i-ph;
+          if(srcIdx<0||srcIdx>=c.values.length)return 0;
+          return c.values[srcIdx];
+        });
+        // Score: voor elk marktdraaipunt kijk of composite ook een draaipunt heeft binnen ±wnd
+        let score=0;
+        mktTurns.forEach(mt=>{
+          const lo=Math.max(0,mt.i-wnd),hi=Math.min(slice.length-1,mt.i+wnd);
+          const sub=slice.slice(lo,hi+1);
+          const mx=Math.max(...sub),mn=Math.min(...sub),v=slice[mt.i];
+          if(mt.type==='Top')score+=( v-mn)/(mx-mn+0.001);
+          else score+=(mx-v)/(mx-mn+0.001);
+        });
+        if(score>bestScore){bestScore=score;bestPhase=ph;}
+      }
+      currentPhases[c.planets]=bestPhase;
+      resolve();
+    },0);
+  })));
+
+  activePresetName='geoptimaliseerd';
+  document.querySelectorAll('.preset-btn').forEach(b=>{
+    b.classList.toggle('active',b.textContent.toLowerCase()==='geoptimaliseerd');
+  });
+  btn.disabled=false;running.style.display='none';
+  renderWeightSliders();render();
+}
+function applyOptimized(){
+  const opt=D.optimized_weights?.[activeAsset];
+  if(!opt){alert('Geen geoptimaliseerde gewichten beschikbaar voor '+activeAsset);return;}
+  Object.keys(currentWeights).forEach(k=>{if(opt[k]!==undefined)currentWeights[k]=opt[k];});
+  renderWeightSliders();render();
+}
+
+function buildComposite(asset,start,end){
+  if(!D.composites?.[asset]?.components){
+    // Asset nog niet in data.js — geef lege composite terug
+    const n=end-start;
+    return{composite:new Array(n).fill(0),components:[]};
+  }
+  const cfg=D.composites[asset].components;
+  const n=end-start;
+  const totalW=cfg.reduce((s,c)=>s+(currentWeights[c.planets]??0.5),0)||1;
+  const result=new Array(n).fill(0);
+  const comps=[];
+  cfg.forEach((c,ci)=>{
+    const w=currentWeights[c.planets]??0.5;
+    const phase=Math.round(currentPhases[c.planets]??0); // fase in dagen
+    // Verschuif de waarden met fase-offset
+    const fullLen=c.values.length;
+    const slice=new Array(n).fill(0).map((_,i)=>{
+      const srcIdx=start+i-phase;
+      if(srcIdx<0||srcIdx>=fullLen)return 0;
+      return c.values[srcIdx];
+    });
+    slice.forEach((v,i)=>result[i]+=(w/totalW)*v);
+    const meta=CYCLE_META[c.planets]||{};
+    const pd=meta.period||0;
+    const pdStr=pd<100?pd.toFixed(0)+'d':pd>=365?(pd/365).toFixed(1)+'j':pd.toFixed(0)+'d';
+    comps.push({planets:c.planets,weight:w,phase,period:pd,periodStr:pdStr,desc:meta.desc||'',label:meta.label||c.planets,values:slice});
+  });
+  return{composite:result.map(v=>+(v.toFixed(4))),components:comps};
+}
+
+function calcConfluence(comps,idx,window=8){
+  let score=0,details=[];
+  comps.forEach(c=>{
+    const vals=c.values,i=idx;
+    if(i<window||i>=vals.length-window)return;
+    const v=vals[i],slice=vals.slice(i-window,i+window+1);
+    const mx=Math.max(...slice),mn=Math.min(...slice);
+    const nearPeak=Math.abs(v-mx)<0.09,nearTrough=Math.abs(v-mn)<0.09;
+    if(nearPeak||nearTrough){
+      const str=nearPeak?(v-mn)/(mx-mn+0.001):(mx-v)/(mx-mn+0.001);
+      const contrib=Math.min(str*c.weight*20,20);
+      score+=contrib;
+      details.push(`${c.label}: ${nearPeak?'Top':'Bodem'} (+${contrib.toFixed(0)})`);
+    }
+  });
+  return{score:Math.min(Math.round(score),100),details};
+}
+function conflColor(s){return s>=70?'#3ec87a':s>=45?'#f7a030':s>=25?'#e8556a':'#5b8af5';}
+function confluenceSeries(comp,window=7){
+  const turns=[];
+  for(let i=window;i<comp.length-window;i++){
+    const s=comp.slice(i-window,i+window+1),v=comp[i];
+    if(v===Math.max(...s)&&v>0.18)turns.push({i,type:'Top',val:v});
+    else if(v===Math.min(...s)&&v<-0.18)turns.push({i,type:'Bodem',val:v});
+  }
+  return turns;
+}
+
+// Bereken Pearson correlatie
+function pearson(xs,ys){
+  const n=xs.length;if(n<5)return 0;
+  const mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;
+  const num=xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
+  const den=Math.sqrt(xs.reduce((s,x)=>s+(x-mx)**2,0)*ys.reduce((s,y)=>s+(y-my)**2,0));
+  return den>0?num/den:0;
+}
+
+function renderWeightSliders(){
+  const corrs=D.correlations?.[activeAsset]||{};
+  const pp=PHASE_PRESETS[activePresetName];
+  document.getElementById('presetNote').textContent=pp?.note||PRESETS[activeAsset].note;
+  const optAvail=!!(D.optimized_weights?.[activeAsset]);
+  document.getElementById('optBtn').style.display=optAvail?'':'none';
+  document.getElementById('weightSliders').innerHTML=Object.entries(currentWeights).map(([planets,w],idx)=>{
+    const meta=CYCLE_META[planets]||{};
+    const col=COMP_COLORS[idx%COMP_COLORS.length];
+    const pct=Math.round((w/2)*100);
+    const pd=meta.period||0;
+    const pdStr=pd<100?pd.toFixed(0)+'d':pd>=365?(pd/365).toFixed(1)+'j':pd.toFixed(0)+'d';
+    const key=planets.replace('/','_');
+    const r=corrs[planets];
+    const hasCorr=r!==undefined;
+    const corrPct=hasCorr?Math.round(Math.abs(r)*100):0;
+    const corrCol=hasCorr?(r>0?'#3ec87a':'#e8556a'):'#5b8af5';
+    const phase=currentPhases[planets]??0;
+    const phaseStr=(phase>=0?'+':'')+phase+'d';
+    const phaseCol=phase===0?'var(--muted)':Math.abs(phase)<10?'#f7a030':'#9d6ff5';
+    return `<div class="weight-item">
+      <div class="weight-header">
+        <span class="weight-name" style="color:${col}">${meta.label||planets.split('/')[0]}</span>
+        <span class="weight-tag">${pdStr}</span>
+        <span class="weight-val" id="wv_${key}">${w.toFixed(1)}</span>
+      </div>
+      ${hasCorr?`<div class="corr-row">
+        <span style="font-size:8px;color:var(--muted);width:22px">r=</span>
+        <div class="corr-bar-bg"><div class="corr-fill" style="width:${corrPct}%;background:${corrCol}"></div></div>
+        <span class="corr-val" style="color:${corrCol}">${r>=0?'+':''}${r.toFixed(3)}</span>
+      </div>`:''}
+      <div class="slider-row">
+        <button class="slider-btn" onclick="updateWeight('${planets}',Math.max(0,parseFloat((${w}-0.1).toFixed(1))))">−</button>
+        <input type="range" min="0" max="2" step="0.1" value="${w}"
+          style="flex:1;accent-color:${col}" oninput="updateWeight('${planets}',parseFloat(this.value))">
+        <button class="slider-btn" onclick="updateWeight('${planets}',Math.min(2,parseFloat((${w}+0.1).toFixed(1))))">+</button>
+      </div>
+      <div class="wbar-bg"><div class="wbar-fill" id="wb_${key}" style="width:${pct}%;background:${col}"></div></div>
+      <div class="phase-row">
+        <span class="phase-label" style="color:var(--muted)">Fase</span>
+        <button class="slider-btn" onclick="updatePhase('${planets}',Math.max(-30,${phase}-1),null)">−</button>
+        <input type="range" min="-30" max="30" step="1" value="${phase}"
+          style="flex:1;accent-color:${phaseCol}" oninput="updatePhase('${planets}',parseInt(this.value),this)">
+        <button class="slider-btn" onclick="updatePhase('${planets}',Math.min(30,${phase}+1),null)">+</button>
+        <span class="phase-val" id="pv_${key}" style="color:${phaseCol}">${phaseStr}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updatePhase(planets,val,el){
+  currentPhases[planets]=val;
+  const key=planets.replace('/','_');
+  const e=document.getElementById('pv_'+key);
+  const col=val===0?'var(--muted)':Math.abs(val)<10?'#f7a030':'#9d6ff5';
+  if(e){e.textContent=(val>=0?'+':'')+val+'d';e.style.color=col;}
+  if(el)el.style.accentColor=col;
+  render();
+}
+
+function updateWeight(planets,val){
+  currentWeights[planets]=val;
+  const key=planets.replace('/','_');
+  const e=document.getElementById('wv_'+key),b=document.getElementById('wb_'+key);
+  if(e)e.textContent=val.toFixed(1);
+  if(b)b.style.width=Math.round((val/2)*100)+'%';
+  render();
+}
+
+// === SPIRAL CALENDAR (Carolan) ===
+const LUNAR_MONTH = 29.5306; // synodische maanmaand in dagen
+const PHI = 1.6180339887;
+// Fibonacci-machten van de maanmaand
+const SPIRAL_INTERVALS = [0,1,2,3,5,8,13,21,34,55,89].map(n=>
+  Math.round(LUNAR_MONTH * Math.pow(PHI, n))
+);
+
+function getSpiralDates(anchorDate, rangeStart, rangeEnd){
+  // Bereken alle Spiral Calendar projectie-datums vanuit een anker
+  const anchor = new Date(anchorDate);
+  const results = [];
+  SPIRAL_INTERVALS.forEach(days=>{
+    if(days===0)return;
+    [1,-1].forEach(dir=>{
+      const d = new Date(anchor);
+      d.setDate(d.getDate() + dir*days);
+      const ds = d.toISOString().slice(0,10);
+      if(ds >= rangeStart && ds <= rangeEnd){
+        results.push({date:ds, days:days, dir:dir>0?'toekomst':'verleden'});
+      }
+    });
+  });
+  return results;
+}
+
+function findAutoAnchor(asset){
+  // Automatisch anker: grootste historische draaipunt uit OHLC
+  const rows = D.ohlc?.[asset]||[];
+  if(rows.length<30)return TODAY;
+  // Zoek absolute high en low in laatste 2 jaar
+  const cutoff = new Date(TODAY);
+  cutoff.setFullYear(cutoff.getFullYear()-2);
+  const cutStr = cutoff.toISOString().slice(0,10);
+  const recent = rows.filter(r=>r.date>=cutStr);
+  if(!recent.length)return TODAY;
+  let maxV=-Infinity,minV=Infinity,maxD='',minD='';
+  recent.forEach(r=>{
+    if(r.close>maxV){maxV=r.close;maxD=r.date;}
+    if(r.close<minV){minV=r.close;minD=r.date;}
+  });
+  // Kies meest recente van top/bodem
+  return maxD>minD?maxD:minD;
+}
+
+function renderSpiralToggle(){
+  const el=document.getElementById('spiralToggle');
+  if(!el)return;
+  el.style.background=showSpiral?'var(--purple)22':'';
+  el.style.borderColor=showSpiral?'var(--purple)':'var(--border)';
+  el.style.color=showSpiral?'var(--purple)':'var(--muted)';
+}
+
+function toggleSpiral(){
+  showSpiral=!showSpiral;
+  renderSpiralToggle();
+  render();
+}
+
+function setSpiralAnchor(date){
+  spiralAnchor=date||null;
+  render();
+}
+
+function renderSeasonality(asset,years){
+  const avail=SEAS_AVAIL[asset]||[5,10];
+  const yearNow=new Date().getFullYear();
+
+  document.getElementById('yearBtns').innerHTML=avail.map(y=>{
+    const startYear=yearNow-y;
+    const hasData=(D.ohlc?.[asset]||[]).some(r=>r.date.startsWith(String(startYear)));
+    return `<button class="yr-btn${y===years?' active':''}" onclick="setSeasYears(${y})" ${!hasData?'disabled style="opacity:.3;cursor:not-allowed"':''}>
+      ${y}j</button>`;
+  }).join('');
+
+  const data=calcSeasonality(asset,years);
+  const startYear=yearNow-years;
+
+  document.getElementById('seasSource').textContent=data
+    ?`${years} jaar gemiddelde (${startYear}–${yearNow}) — berekend uit CSV · ${years>=20?'Robuust':years>=10?'Redelijke steekproef':'Kleine steekproef, indicatief'}`
+    :`Onvoldoende data voor ${years} jaar`;
+
+  if(!data){
+    document.getElementById('seasonalityBars').innerHTML=`<div style="font-size:9px;color:var(--muted);padding:6px 0">Laden... of onvoldoende historische data.</div>`;
+    return;
+  }
+
+  const curM=new Date().getMonth();
+  document.getElementById('seasonalityBars').innerHTML=data.map((v,i)=>{
+    const bull=v>=.5,pct=Math.abs(Math.round((v-.5)*200)),col=bull?'#3ec87a':'#e8556a';
+    const valStr=(bull?'+':'-')+Math.abs(Math.round((v-.5)*100))+'%';
+    const isCur=i===curM;
+    return `<div class="seas-bar${isCur?' seas-cur':''}">
+      <span class="seas-month" style="${isCur?'color:#fff':''}">${MONTHS_NL[i]}</span>
+      <div class="seas-track"><div class="seas-mid"></div>
+        ${bull?`<div class="seas-fill-pos" style="width:${pct}%;background:${col}${isCur?'':'99'}"></div>`
+              :`<div class="seas-fill-neg" style="width:${pct}%;background:${col}${isCur?'':'99'}"></div>`}
+      </div>
+      <span class="seas-val" style="color:${col}">${valStr}</span>
+    </div>`;
+  }).join('');
+}
+function setSeasYears(y){activeSeasYears=y;renderSeasonality(activeAsset,y);}
+
+function renderMetrics(asset,start,end,composite){
+  const ti=todayIdx(),li=Math.min(Math.max(ti-start,0),composite.length-1);
+  const cur=composite[li];
+  const phase=cur>.28?'▲ Bullish':cur<-.28?'▼ Bearish':'— Neutraal';
+  const phCol=cur>.28?'#3ec87a':cur<-.28?'#e8556a':'#8890aa';
+  const wnd=activeModel==='long'?14:activeModel==='weekly'?7:5;
+  const turns=confluenceSeries(composite,wnd);
+  const next=turns.find(t=>(t.i+start)>ti);
+  const nextDate=next?D.dates[next.i+start]:'–';
+  const dTo=next?Math.round((new Date(nextDate)-new Date(TODAY))/86400000):'–';
+  const endDate=D.dates[Math.min(end-1,D.dates.length-1)];
+  const futDays=Math.max(0,Math.round((new Date(endDate)-new Date(TODAY))/86400000));
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Asset · Model</div>
+      <div class="metric-val" style="color:${ASSET_COLORS[asset]};font-size:14px">${asset}</div>
+      <div class="metric-sub">${activeModel==='long'?'Long term':activeModel==='weekly'?'Weekly swing':'Short term'}</div></div>
+    <div class="metric"><div class="metric-label">Cyclische fase</div>
+      <div class="metric-val" style="color:${phCol};font-size:13px">${phase}</div>
+      <div class="metric-sub">Index: ${cur>=0?'+':''}${cur.toFixed(3)}</div></div>
+    <div class="metric"><div class="metric-label">Volgend keerpunt</div>
+      <div class="metric-val" style="font-size:13px;color:${next&&nextDate>TODAY?'#7ba8f8':'#aab0c8'}">${nextDate}</div>
+      <div class="metric-sub">${dTo!=='–'?dTo+'d · ':''}${next?next.type:'–'}</div></div>
+    <div class="metric"><div class="metric-label">Toekomst venster</div>
+      <div class="metric-val" style="font-size:13px;color:#7ba8f8">${futDays}d</div>
+      <div class="metric-sub">t/m ${endDate}</div></div>`;
+}
+
+function renderConfluence(comps,start){
+  const ti=todayIdx(),li=Math.max(0,ti-start);
+  const{score,details}=calcConfluence(comps,li);
+  const col=conflColor(score);
+  document.getElementById('confScore').textContent=score;
+  document.getElementById('confScore').style.color=col;
+  document.getElementById('confFill').style.cssText=`width:${score}%;background:linear-gradient(90deg,#5b8af5,${col})`;
+  const label=score>=70?'Hoge confluentie — sterk keerpuntsignaal':score>=45?'Matige confluentie':score>=25?'Lage confluentie':'Minimale confluentie';
+  document.getElementById('confDetail').textContent=`${label}${details.length?' · '+details.join(' · '):''}`;
+}
+
+function renderBacktestStats(composite,start,end){
+  // Haal OHLC op voor overlap
+  const ohlcMap={};
+  (D.ohlc?.XAU||[]).forEach(r=>ohlcMap[r.date]=r.close);
+  const dates=D.dates.slice(start,end);
+  const paired=dates.map((d,i)=>({comp:composite[i],close:ohlcMap[d]})).filter(p=>p.close!==undefined);
+  if(paired.length<10){document.getElementById('corrSummary').innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted)">Onvoldoende historische data in dit venster.</div>';return;}
+  // 5-dag forward returns
+  const xs=[],ys=[];
+  for(let i=0;i<paired.length-5;i++){xs.push(paired[i].comp);ys.push((paired[i+5].close/paired[i].close)-1);}
+  const r=pearson(xs,ys);
+  const col=Math.abs(r)>.1?'#3ec87a':Math.abs(r)>.05?'#f7a030':'#e8556a';
+  // Directional accuracy
+  let correct=0;
+  for(let i=0;i<xs.length;i++){if((xs[i]>0&&ys[i]>0)||(xs[i]<0&&ys[i]<0))correct++;}
+  const acc=Math.round((correct/xs.length)*100);
+  document.getElementById('corrSummary').innerHTML=`
+    <div class="corr-card"><div class="corr-card-label">Correlatie (5d return)</div>
+      <div class="corr-card-val" style="color:${col}">${r>=0?'+':''}${r.toFixed(3)}</div>
+      <div style="font-size:8px;color:var(--muted);margin-top:3px">n=${xs.length} datapunten</div></div>
+    <div class="corr-card"><div class="corr-card-label">Richtingsnauwkeurigheid</div>
+      <div class="corr-card-val" style="color:${acc>=55?'#3ec87a':acc>=50?'#f7a030':'#e8556a'}">${acc}%</div>
+      <div style="font-size:8px;color:var(--muted);margin-top:3px">Hoe vaak juiste richting?</div></div>`;
+}
+
+const markerPlugin={
+  id:'markers',
+  afterDraw(chart){
+    const{ctx,chartArea,scales}=chart;if(!chartArea)return;
+    const{start:ws,end:we}=getWindow();
+    const ti=todayIdx();ctx.save();
+    const fx=scales.x.getPixelForValue(ti-ws);
+    if(fx>chartArea.left&&fx<chartArea.right){
+      ctx.fillStyle='rgba(91,138,245,0.05)';
+      ctx.fillRect(fx,chartArea.top,chartArea.right-fx,chartArea.bottom-chartArea.top);
+      ctx.strokeStyle='rgba(91,138,245,0.35)';ctx.lineWidth=1;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(fx,chartArea.top);ctx.lineTo(fx,chartArea.bottom);ctx.stroke();
+      ctx.font='8px monospace';ctx.fillStyle='rgba(91,138,245,0.6)';ctx.fillText('▶',fx+3,chartArea.top+9);
+    }
+    if(showMoon)D.moon_phases.forEach(ev=>{
+      const idx=D.dates.indexOf(ev.date);if(idx<ws||idx>=we)return;
+      const x=scales.x.getPixelForValue(idx-ws);if(x<chartArea.left||x>chartArea.right)return;
+      const isFull=ev.aspect==='Volle Maan',isNew=ev.aspect==='Nieuwe Maan';
+      ctx.strokeStyle=isFull?'rgba(240,192,80,.35)':isNew?'rgba(80,80,80,.4)':'rgba(60,100,160,.3)';
+      ctx.lineWidth=isFull?1.2:.7;ctx.setLineDash([3,4]);
+      ctx.beginPath();ctx.moveTo(x,chartArea.top);ctx.lineTo(x,chartArea.bottom);ctx.stroke();ctx.setLineDash([]);
+      if(isFull||isNew){ctx.font='8px monospace';ctx.fillStyle=isFull?'rgba(240,192,80,.7)':'rgba(120,120,120,.6)';ctx.fillText(isFull?'○':'●',x-3,chartArea.top+9);}
+    });
+    if(showAspects)Object.values(D.aspects).forEach(list=>list.forEach(ev=>{
+      const idx=D.dates.indexOf(ev.date);if(idx<ws||idx>=we)return;
+      const x=scales.x.getPixelForValue(idx-ws);if(x<chartArea.left||x>chartArea.right)return;
+      const c=ev.aspect?.includes('Conjunctie')?'rgba(91,138,245,.4)':ev.aspect==='Oppositie'?'rgba(232,85,106,.4)':ev.aspect==='Kwadrant'?'rgba(157,111,245,.4)':'rgba(62,200,122,.4)';
+      ctx.strokeStyle=c;ctx.lineWidth=.8;ctx.setLineDash([4,5]);
+      ctx.beginPath();ctx.moveTo(x,chartArea.top);ctx.lineTo(x,chartArea.bottom);ctx.stroke();ctx.setLineDash([]);
+    }));
+    if(showRetro)Object.entries(D.retrograde).forEach(([pl,list])=>list.forEach(ev=>{
+      const idx=D.dates.indexOf(ev.date);if(idx<ws||idx>=we)return;
+      const x=scales.x.getPixelForValue(idx-ws);if(x<chartArea.left||x>chartArea.right)return;
+      ctx.font='7px monospace';ctx.fillStyle=ev.type==='R'?'rgba(232,85,106,.5)':'rgba(62,200,122,.5)';
+      ctx.fillText(ev.type==='R'?'℞':'D',x-3,chartArea.bottom-3);
+    }));
+    // Keerpunt driehoekjes + datum labels
+    if(lastTurningPoints.length>0){
+      const mNl=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+      lastTurningPoints.forEach(tp=>{
+        const idx=D.dates.indexOf(tp.date);
+        if(idx<ws||idx>=we)return;
+        const x=scales.x.getPixelForValue(idx-ws);
+        if(x<chartArea.left||x>chartArea.right)return;
+        const isTop=tp.type==='Top';
+        const col=isTop?'rgba(62,200,122,0.75)':'rgba(232,85,106,0.75)';
+        const isFut=tp.date>=TODAY;
+        // Driehoek
+        ctx.fillStyle=col;
+        ctx.beginPath();
+        if(isTop){ctx.moveTo(x,chartArea.top+3);ctx.lineTo(x-5,chartArea.top+11);ctx.lineTo(x+5,chartArea.top+11);}
+        else{ctx.moveTo(x,chartArea.bottom-3);ctx.lineTo(x-5,chartArea.bottom-11);ctx.lineTo(x+5,chartArea.bottom-11);}
+        ctx.fill();
+        // Datum label alleen voor toekomstige keerpunten
+        if(isFut){
+          const[y,m,d]=tp.date.split('-');
+          const label=`${parseInt(d)} ${mNl[parseInt(m)-1]}`;
+          ctx.save();
+          ctx.translate(x+3,isTop?chartArea.top+24:chartArea.bottom-24);
+          ctx.rotate(Math.PI/2);
+          ctx.font='7px monospace';ctx.fillStyle=col;
+          ctx.fillText(label,0,0);
+          ctx.restore();
+        }
+      });
+    }
+    // === SPIRAL CALENDAR LIJNEN ===
+    if(showSpiral){
+      const anchor = spiralAnchor || findAutoAnchor(activeAsset);
+      document.getElementById('spiralAnchorLabel').textContent =
+        `Anker: ${anchor} ${spiralAnchor?'(handmatig)':'(auto)'}`;
+      document.getElementById('spiralPanel').style.display='';
+      const spiralDates = getSpiralDates(anchor, dates[0], dates[dates.length-1]);
+      spiralDates.forEach(sp=>{
+        const idx = D.dates.indexOf(sp.date);
+        if(idx<ws||idx>=we)return;
+        const x = scales.x.getPixelForValue(idx-ws);
+        if(x<chartArea.left||x>chartArea.right)return;
+        const isFut = sp.date >= TODAY;
+        ctx.save();
+        ctx.strokeStyle = isFut ? 'rgba(157,111,245,0.6)' : 'rgba(157,111,245,0.25)';
+        ctx.lineWidth = isFut ? 1.5 : 1;
+        ctx.setLineDash([4,3]);
+        ctx.beginPath();
+        ctx.moveTo(x, chartArea.top);
+        ctx.lineTo(x, chartArea.bottom);
+        ctx.stroke();
+        // Label: Fibonacci interval
+        if(isFut){
+          ctx.save();
+          ctx.translate(x+3, chartArea.top+12);
+          ctx.rotate(Math.PI/2);
+          ctx.font='7px monospace';
+          ctx.fillStyle='rgba(157,111,245,0.8)';
+          ctx.fillText(`φ ${sp.days}d`,0,0);
+          ctx.restore();
+        }
+        ctx.restore();
+      });
+    } else {
+      document.getElementById('spiralPanel').style.display='none';
+      document.getElementById('spiralAnchorLabel').textContent='';
+    }
+    ctx.restore();
+  }
+};
+
+// Bouw prijs-projectie uit composite golf
+// Methode: cumulatieve integratie van composite-veranderingen,
+// verankerd aan laatste bekende koers en geschaald naar verwacht bereik.
+function buildProjection(composite, dates, asset, anchorStrategy='cumulative') {
+  const ohlcMap = {};
+  (D.ohlc?.[asset] || []).forEach(r => ohlcMap[r.date] = r.close);
+
+  const ti = todayIdx();
+  const n = composite.length;
+
+  // Vind anker: de laatste bekende slotkoers in het venster
+  let anchorIdx = -1;
+  let anchorPrice = null;
+  for (let i = 0; i < dates.length; i++) {
+    if (ohlcMap[dates[i]] !== undefined) {
+      anchorIdx = i;
+      anchorPrice = ohlcMap[dates[i]];
+    }
+  }
+
+  // Fallback: gebruik een generieke referentieprijs per asset
+  const FALLBACK_PRICE = {XAU:3000,XAG:30,BTC:75000,SPX:5000,DXY:100,WTI:70};
+  if (anchorPrice === null) {
+    anchorPrice = FALLBACK_PRICE[asset] || 1000;
+    anchorIdx = Math.max(0, n - 1);
+  }
+
+  // Bereken de dagelijkse verandering in composite
+  const deltas = new Array(n).fill(0);
+  for (let i = 1; i < n; i++) {
+    deltas[i] = composite[i] - composite[i - 1];
+  }
+
+  // Cumulatieve som van deltas → relatieve beweging
+  const cumDelta = new Array(n).fill(0);
+  let running = 0;
+  for (let i = 0; i < n; i++) {
+    running += deltas[i];
+    cumDelta[i] = running;
+  }
+
+  // Schaal: bepaal de volatiliteit op basis van asset
+  const VOL_FACTOR = {XAU:0.008,XAG:0.012,BTC:0.018,SPX:0.006,DXY:0.004,WTI:0.014};
+  const vol = VOL_FACTOR[asset] || 0.008;
+
+  // Normaliseer cumDelta zodat de max uitslag ~vol*anchorPrice per stap is
+  const maxDelta = Math.max(...cumDelta.map(Math.abs)) || 1;
+  const scaleFactor = (vol * anchorPrice * Math.sqrt(n)) / maxDelta;
+
+  // Bouw projectie: verankerd op anchorIdx
+  const projection = new Array(n).fill(null);
+  const anchorCum = cumDelta[anchorIdx];
+  for (let i = 0; i < n; i++) {
+    projection[i] = anchorPrice + (cumDelta[i] - anchorCum) * scaleFactor;
+  }
+
+  return { projection, anchorIdx, anchorPrice };
+}
+
+function renderCharts(asset,start,end,modelData){
+  const dates=D.dates.slice(start,end);
+  const comp=modelData.composite;
+  const color=ASSET_COLORS[asset];
+  const step=Math.max(1,Math.floor(dates.length/10));
+
+  // Backtest view: prijs + composite overlay
+  const ohlcMap={};
+  (D.ohlc?.[asset]||[]).forEach(r=>ohlcMap[r.date]=r.close);
+  const hasOHLC=dates.some(d=>ohlcMap[d]!==undefined);
+
+  if(mainChart)mainChart.destroy();
+
+  const datasets=[{
+    label:'Composite',data:comp,borderColor:COMPOSITE_COLOR,borderWidth:activeView==='backtest'?1.5:2.2,
+    pointRadius:0,tension:0.4,
+    yAxisID:activeView==='backtest'&&hasOHLC?'yComp':'y',
+    fill:activeView==='backtest'?false:{target:'origin',above:COMPOSITE_COLOR+'25',below:COMPOSITE_COLOR+'12'}
+  }];
+
+  let yScales={
+    y:{min:-1,max:1,
+       ticks:{color:'#7a82a0',font:{size:10,family:'monospace'},
+              callback:v=>v===1?'+1.0':v===.5?'+0.5':v===0?'0':v===-.5?'−0.5':v===-1?'−1.0':''},
+       grid:{color:'#1c2030'},border:{dash:[3,3]}}
+  };
+
+  // === KOERS OVERLAY IN COMPOSITE VIEW ===
+  // Altijd zichtbaar: historische koers (grijs) + cyclische projectie (gestippeld)
+  if(activeView==='composite'){
+    const ohlcMap={};
+    (D.ohlc?.[asset]||[]).forEach(r=>ohlcMap[r.date]=r.close);
+    const histPrices=dates.map(d=>ohlcMap[d]||null);
+    const hasHist=histPrices.some(p=>p!==null);
+
+    if(hasHist){
+      const {projection}=buildProjection(comp,dates,asset);
+      const ti=todayIdx();
+      const relToday=ti-start;
+
+      // Historische koers
+      datasets.push({
+        label:`${asset} Koers`,
+        data:histPrices,
+        borderColor:'rgba(200,210,230,0.55)',
+        borderWidth:1.5,pointRadius:0,tension:0.2,
+        yAxisID:'yProj',spanGaps:true
+      });
+
+      // Toekomst projectie gestippeld
+      const futData=projection.map((v,i)=>i>=relToday?v:null);
+      datasets.push({
+        label:`Cyclische Projectie`,
+        data:futData,
+        borderColor:color,
+        borderWidth:2,borderDash:[6,4],
+        pointRadius:0,tension:0.3,
+        yAxisID:'yProj',spanGaps:false,fill:false
+      });
+
+      const allPrices=[...histPrices.filter(p=>p!==null),...projection.filter(p=>p!==null)];
+      const pMin=Math.min(...allPrices)*0.98,pMax=Math.max(...allPrices)*1.02;
+
+      yScales={
+        y:{position:'left',min:-1,max:1,
+           ticks:{color:'#7a82a0',font:{size:9,family:'monospace'},callback:v=>v===1?'+1':v===0?'0':v===-1?'−1':''},
+           grid:{color:'#1c2030'},border:{dash:[3,3]},
+           title:{display:true,text:'Composite',color:'#7a82a0',font:{size:8}}},
+        yProj:{position:'right',min:pMin,max:pMax,
+               type:priceScale==='log'?'logarithmic':'linear',
+               ticks:{color:'rgba(200,210,230,0.6)',font:{size:9,family:'monospace'},
+                      callback:v=>asset==='BTC'?'$'+Math.round(v/1000)+'k':asset==='DXY'?v.toFixed(1):v.toFixed(0)},
+               grid:{display:false},
+               title:{display:true,text:`${asset} Prijs`,color:'rgba(200,210,230,0.5)',font:{size:8}}}
+      };
+    }
+  }
+
+  if(activeView==='backtest'&&hasOHLC){
+    const prices=dates.map(d=>ohlcMap[d]||null);
+    const validPrices=prices.filter(p=>p!==null);
+    const pMin=Math.min(...validPrices)*0.99,pMax=Math.max(...validPrices)*1.01;
+    datasets.push({
+      label:`${asset} Koers`,data:prices,borderColor:'rgba(255,255,255,0.5)',
+      borderWidth:1.5,pointRadius:0,tension:0.2,yAxisID:'yPrice',spanGaps:true
+    });
+    yScales={
+      yComp:{position:'left',min:-1,max:1,
+             ticks:{color:'#7a82a0',font:{size:9,family:'monospace'},callback:v=>v===1?'+1':v===0?'0':v===-1?'−1':''},
+             grid:{color:'#1c2030'},border:{dash:[3,3]},title:{display:true,text:'Composite',color:'#7a82a0',font:{size:8}}},
+      yPrice:{position:'right',min:pMin,max:pMax,
+              type:priceScale==='log'?'logarithmic':'linear',
+              ticks:{color:'#aab0c8',font:{size:9,family:'monospace'},callback:v=>v.toFixed(0)},
+              grid:{display:false},title:{display:true,text:'Prijs (USD)',color:'#aab0c8',font:{size:8}}}
+    };
+  }
+
+  mainChart=new Chart(document.getElementById('mainChart'),{
+    type:'line',plugins:[markerPlugin],
+    data:{labels:dates,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:activeView==='backtest',position:'top',
+          labels:{color:'#9aa0b8',font:{size:9,family:'monospace'},boxWidth:14,padding:8}},
+        tooltip:{backgroundColor:'#1a1d26',borderColor:'#2a2f42',borderWidth:1,titleColor:'#aab0c8',bodyColor:'#eef0f6',
+          callbacks:{label:c=>` ${c.dataset.label}: ${c.raw!==null?(c.raw>=0?'+':'')+c.raw.toFixed(c.dataset.label.includes('Koers')?2:3):'–'}`}}
+      },
+      scales:{
+        x:{ticks:{color:'#6870a0',font:{size:9,family:'monospace'},maxTicksLimit:12,
+                  callback:(v,i)=>{
+                    const d=dates[i];if(!d)return'';
+                    const[y,m,dy]=d.split('-');
+                    const mNl=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+                    return `${parseInt(dy)} ${mNl[parseInt(m)-1]} '${y.slice(2)}`;
+                  }},
+           grid:{color:'#1c2030'}},
+        ...yScales
+      },
+      animation:{duration:220}
+    }
+  });
+
+  // Components
+  const compPanel=document.getElementById('compPanel');
+  compPanel.style.display=showComps&&activeView==='composite'?'':'none';
+  if(showComps&&activeView==='composite'){
+    const compDs=modelData.components.filter(c=>c.weight>0.1).map((c,i)=>({
+      label:`${c.label} (${c.periodStr}) ×${c.weight.toFixed(1)}`,
+      data:c.values.map(v=>v*c.weight),
+      borderColor:COMP_COLORS[i%COMP_COLORS.length],
+      borderWidth:1.3,pointRadius:0,tension:0.35
+    }));
+    if(compChart)compChart.destroy();
+    compChart=new Chart(document.getElementById('compChart'),{
+      type:'line',data:{labels:dates,datasets:compDs},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:true,position:'top',labels:{color:'#9aa0b8',font:{size:9,family:'monospace'},boxWidth:14,padding:8}},tooltip:{enabled:false}},
+        scales:{x:{display:false},y:{ticks:{color:'#7a82a0',font:{size:9,family:'monospace'},callback:v=>v===1?'+1':v===0?'0':v===-1?'−1':''},grid:{color:'#1c2030'}}}
+      }
+    });
+  }
+
+  // Y-axis labels in composite mode
+  // In composite+projectie modus: chart heeft eigen assen, verberg de HTML labels
+  const useChartAxes = (activeView==='backtest'&&hasOHLC) || (activeView==='composite'&&showProjection);
+  document.getElementById('yAxisLeft').style.display=useChartAxes?'none':'';
+  document.getElementById('yAxisRight').style.display=useChartAxes?'none':'';
+
+  // Legend voor composite
+  if(activeView==='composite'){
+    const projLeg=showProjection?[
+      ['rgba(170,176,200,0.5)','Hist. projectie'],
+      [color,'Cyclische projectie (gestippeld)']
+    ]:[];
+    document.getElementById('legend').innerHTML=[
+      [color,'Composite'],...projLeg,
+      ['rgba(240,192,80,.7)','Volle Maan'],
+      ['rgba(91,138,245,.7)','Conjunctie'],['rgba(232,85,106,.7)','Oppositie']
+    ].map(([c,l])=>`<div class="leg"><div class="leg-line" style="background:${c}"></div>${l}</div>`).join('');
+  } else {
+    document.getElementById('legend').innerHTML='';
+  }
+  document.getElementById('mainTitle').textContent=activeView==='backtest'
+    ?`Backtest · ${asset} Koers + Composite Wave`
+    :showProjection
+      ?`Composite + Prijs-Projectie · ${activeModel==='long'?'LT':activeModel==='weekly'?'WK':'ST'} · ${asset}`
+      :`Composite · ${activeModel==='long'?'Long Term':activeModel==='weekly'?'Weekly Swing':'Short Term'} · ${asset} · −1.0 (bearish) → +1.0 (bullish)`;
+}
+
+const EVENT_UITLEG={
+  'Volle Maan':'Maancyclus top. Historisch een keerpunt in sentiment voor edelmetalen. Let op of de composite ook een top/bodem heeft nabij deze datum.',
+  'Nieuwe Maan':'Begin van nieuwe maancyclus (29,5d). Vaak een stil draaipunt — cyclisch relevant voor de kortere termijn.',
+  'Eerste Kwartier':'Halverwege Nieuwe→Volle Maan. Toenemende spanning in de maancyclus.',
+  'Laatste Kwartier':'Halverwege Volle→Nieuwe Maan. Afnemende kracht, potentieel zwak momentum.',
+  'Conjunctie':'Twee planeten op dezelfde graad. Versterkt gecombineerde cyclische kracht. Kan versnelling of keerpunt markeren.',
+  'Oppositie':'Twee planeten 180° tegenover elkaar. Klassiek spanningsmoment — vaak top of bodem in de middellange cyclus.',
+  'Kwadrant':'Twee planeten 90° uit fase. Frictiemoment — kan volatiliteit of koersbreuk signaleren.',
+  'Trine':'Twee planeten 120° uit fase. Harmonisch — vloeiende trend met minder weerstand.',
+  'Sextiel':'Twee planeten 60° uit fase. Licht positief aspect — ondersteunt lopende trend.',
+};
+function evTip(ev){
+  const base=ev.aspect||'';
+  const type=Object.keys(EVENT_UITLEG).find(k=>base.includes(k))||'';
+  const tekst=EVENT_UITLEG[type]||'Planetair event met mogelijke invloed op het cyclische ritme.';
+  const pl=ev.planets?`<br><em>${ev.planets}</em>`:'';
+  const t=ev.time?` · ${ev.time}`:'';
+  return `<strong>${base}</strong>${pl}${t}<br><br>${tekst}`;
+}
+
+function applyTz(timeStr){
+  if(!timeStr||activeTzOffset===0)return timeStr;
+  // Parse "HH:MM UT" formaat
+  const m=timeStr.match(/(\d{2}):(\d{2})/);
+  if(!m)return timeStr;
+  let h=parseInt(m[1])+activeTzOffset;
+  const min=m[2];
+  // Handle overflow
+  h=((h%24)+24)%24;
+  const tzNames={0:'UT',1:'CET',2:'CEST','-5':'EST','-4':'EDT',8:'CST'};
+  const tzName=tzNames[activeTzOffset]||`UTC${activeTzOffset>=0?'+':''}${activeTzOffset}`;
+  return `${String(h).padStart(2,'0')}:${min} ${tzName}`;
+}
+
+function renderSidebar(start,end,modelData){
+  const s=D.dates[start],e=D.dates[Math.min(end-1,D.dates.length-1)];
+  const all=[];
+  D.moon_phases.forEach(ev=>{if(ev.date>=s&&ev.date<=e)all.push({...ev,cat:'moon'});});
+  Object.values(D.aspects).forEach(list=>list.forEach(ev=>{if(ev.date>=s&&ev.date<=e)all.push({...ev,cat:'aspect'});}));
+  all.sort((a,b)=>a.date.localeCompare(b.date));
+  const future=all.filter(e=>e.date>=TODAY).slice(0,12);
+  const evCol=ev=>ev.cat==='moon'?(ev.aspect==='Volle Maan'?'#d4a843':ev.aspect==='Nieuwe Maan'?'#556':'#446699'):
+    ev.aspect?.includes('Conjunctie')?'#5b8af5':ev.aspect==='Oppositie'?'#e8556a':ev.aspect==='Kwadrant'?'#9d6ff5':'#3ec87a';
+  document.getElementById('eventList').innerHTML=future.map(ev=>
+    `<div class="event-item" style="border-left-color:${evCol(ev)}">
+      <div class="ei-date">${ev.date}</div><div class="ei-name">${ev.aspect}</div>
+      <div class="ei-sub">${ev.cat==='moon'?applyTz(ev.time):(ev.planets||'')+(ev.time?' · '+applyTz(ev.time):'')}</div>
+      <span class="tip">${evTip(ev)}</span>
+    </div>`).join('');
+  const wnd=activeModel==='long'?14:activeModel==='weekly'?7:5;
+  const turns=confluenceSeries(modelData.composite,wnd);
+  lastTurningPoints=turns.map(tp=>({...tp,date:D.dates[tp.i+start]}));
+  document.getElementById('turningList').innerHTML=turns.slice(0,10).map(tp=>{
+    const date=D.dates[tp.i+start],fut=date>=TODAY,col=tp.type==='Top'?'#3ec87a':'#e8556a';
+    const pct=Math.round(Math.abs(tp.val)*100);
+    return `<div class="kp-item" style="border-left:2px solid ${col}${fut?'':'55'};opacity:${fut?1:.4}">
+      <div class="ei-date">${date} ${fut?'<span style="color:#7ba8f8">◆</span>':''}</div>
+      <div class="ei-name" style="color:${col}">${tp.type} · ${tp.val>=0?'+':''}${tp.val.toFixed(3)}</div>
+      <div class="kp-bar"><div style="width:${pct}%;height:100%;background:${col};border-radius:1px"></div></div>
+    </div>`;
+  }).join('');
+  const retros=[];
+  Object.entries(D.retrograde).forEach(([pl,list])=>list.forEach(ev=>{if(ev.date>=TODAY&&ev.date<=e)retros.push({...ev});}));
+  retros.sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('retroList').innerHTML=retros.slice(0,10).map(r=>
+    `<div class="retro-item">
+      <span style="color:var(--muted2)">${r.planet}</span>
+      <span class="retro-${r.type}">${r.type==='R'?'℞ Start':'D Direct'}</span>
+      <span style="color:var(--muted)">${r.date}</span>
+    </div>`).join('');
+}
+
+function renderToggles(){
+  renderSpiralToggle();
+  document.getElementById('toggles').innerHTML=[
+    ['tMoon',showMoon,'Maanfasen'],['tAsp',showAspects,'Planetaire aspecten'],
+    ['tRetro',showRetro,'Retrograde'],['tComp',showComps,'Componenten grafiek'],
+    ['tProj',showProjection,'Prijs-projectie lijn'],
+  ].map(([id,v,l])=>`<label class="toggle"><input type="checkbox" id="${id}" ${v?'checked':''}><span>${l}</span></label>`).join('');
+  document.getElementById('tMoon').onchange=e=>{showMoon=e.target.checked;render();};
+  document.getElementById('tAsp').onchange=e=>{showAspects=e.target.checked;render();};
+  document.getElementById('tRetro').onchange=e=>{showRetro=e.target.checked;render();};
+  document.getElementById('tComp').onchange=e=>{showComps=e.target.checked;render();};
+  document.getElementById('tProj').onchange=e=>{showProjection=e.target.checked;render();};
+}
+
+function renderUitleg(asset, modelData, start, end){
+  const fase=activeModel==='long'?'Long Term':activeModel==='weekly'?'Weekly Swing':'Short Term';
+  const preset=activePresetName.charAt(0).toUpperCase()+activePresetName.slice(1);
+  const ti=todayIdx();
+  const li=Math.min(Math.max(ti-start,0),modelData.composite.length-1);
+  const cur=modelData.composite[li];
+  const fase_str=cur>.28?'bullish (stijgend)':cur<-.28?'bearish (dalend)':'neutraal (zijwaarts)';
+  const wnd=activeModel==='long'?14:activeModel==='weekly'?7:5;
+  const turns=confluenceSeries(modelData.composite,wnd);
+  const next=turns.find(t=>(t.i+start)>ti);
+  const nextDate=next?D.dates[next.i+start]:'onbekend';
+  const dTo=next?Math.round((new Date(nextDate)-new Date(TODAY))/86400000):'–';
+
+  // Dominant gewogen cyclus
+  const sorted=[...modelData.components].sort((a,b)=>b.weight-a.weight);
+  const dom=sorted[0],sub=sorted[1];
+
+  // Actieve fase-verschuivingen
+  const verschoven=modelData.components.filter(c=>Math.abs(c.phase)>2);
+
+  // Fase-uitleg per planeet
+  const FASE_UITLEG={
+    'Maan/Zon':'De maancyclus (29,5 dagen) heeft de kortste invloed en stuurt kortetermijn momentum. Een top in de composite nabij volle maan wijst op tijdelijke druk.',
+    'Venus/Zon':'Venus (584 dagen) correleert sterk met goud en edelmetalen. Een stijgende Venus-golf suggereert aantrekkingskracht naar safe havens.',
+    'Mars/Zon':'Mars (780 dagen) drijft energie en agressiviteit in markten. WTI en SPX reageren hier het sterkst op.',
+    'Jupiter/Zon':'Jupiter (399 dagen) staat voor expansie en speculatie. BTC reageert hier historisch het sterkst op.',
+    'Jupiter/Saturn':'De grote conjunctiecyclus (~19,9 jaar) bepaalt structurele bull- en bearmarkten. Langzaam maar krachtig.',
+    'Saturn/Zon':'Saturn (378 dagen) staat voor contractie en realisme. De dollar en defensieve assets zijn hier gevoeliger voor.',
+    'Uranus/Zon':'Uranus (370 dagen) brengt disruptie en plotselinge koerswendingen. Relevant voor BTC en tech-gedreven markten.',
+    'Mercurius/Zon':'Mercurius (116 dagen) beïnvloedt communicatie en handel. Retrograde perioden van Mercurius vallen samen met volatiliteit.',
+    'Neptunus/Zon':'Neptunus (368 dagen) werkt langzaam en diffuus. Lage gewichten zijn hier normaal.',
+  };
+
+  document.getElementById('uitlegPreset').textContent=`${preset} · ${fase}`;
+
+  const blokken=[
+    {
+      titel:'Wat zie je in de grafiek?',
+      tekst:`De gele/gekleurde lijn is de <strong>composite cyclische kracht</strong> — een getal tussen −1,0 (sterk bearish) en +1,0 (sterk bullish). De witte lijn is de <strong>werkelijke koers</strong> van ${asset}. De gestippelde lijn toont de <strong>cyclische prijsprojectie</strong> op basis van het huidige ritme. Het blauwe verticale vlak markeert vandaag — alles rechts ervan is toekomst.`
+    },
+    {
+      titel:`Huidige fase: ${fase_str}`,
+      tekst:`De composite staat op <strong>${cur>=0?'+':''}${cur.toFixed(3)}</strong>. ${cur>.28?`Dit betekent dat meerdere planetaire cycli momenteel omhoog wijzen voor ${asset}. De cyclische kracht ondersteunt de bullish kant.`:cur<-.28?`Meerdere cycli wijzen omlaag. De cyclische kracht geeft een bearish signaal voor ${asset}. Dit betekent niet dat de koers per se daalt, maar dat het cyclische ritme drukt.`:`De cycli zijn verdeeld. Er is geen duidelijke richting. Afwachten of bevestiging afwachten van andere indicatoren.`}`
+    },
+    {
+      titel:'Dominante cycli in dit model',
+      tekst:`De zwaarst gewogen cyclus is <strong>${dom?.label||'–'}</strong> (gewicht: ${dom?.weight?.toFixed(1)||'–'}), gevolgd door <strong>${sub?.label||'–'}</strong> (${sub?.weight?.toFixed(1)||'–'}). ${FASE_UITLEG[dom?.planets]||''}`
+    },
+    {
+      titel:'Fase-ijking (verschuiving)',
+      tekst: verschoven.length>0
+        ?`${verschoven.length} cycli zijn verschoven t.o.v. de pure astronomische fase: ${verschoven.map(c=>`<strong>${c.label}</strong> (${c.phase>0?'+':''}${c.phase}d)`).join(', ')}. Dit betekent dat de markt historisch gezien iets <em>later</em> of <em>eerder</em> reageert dan de planeetbeweging zelf.`
+        :'Alle cycli staan op de pure astronomische fase (0 dagen verschuiving). Dit is het meest conservatieve startpunt.'
+    },
+    {
+      titel:`Volgend keerpunt: ${nextDate}`,
+      tekst: next
+        ?`Over <strong>${dTo} dagen</strong> bereikt de composite een verwacht <strong>${next.type==='Top'?'lokale top (bearish keerpunt)':'lokale bodem (bullish keerpunt)'}</strong>. Dit is het punt waar meerdere cycli gelijktijdig omkeren. Hoe hoger de confluence score, hoe sterker dit signaal.`
+        :'Geen duidelijk keerpunt zichtbaar in het huidige venster. Vergroot het tijdsvenster of pas de gewichten aan.'
+    },
+    {
+      titel:'Hoe gebruik je dit model?',
+      tekst:`Het model geeft <strong>geen koopadvies</strong> maar toont het cyclische ritme. Gebruik het als <em>timing-filter</em>: een bullish composite ondersteunt long-posities, een bearish composite suggereert voorzichtigheid. Combineer altijd met technische analyse (steun/weerstand, RSI, EMA's) voor bevestiging.`
+    },
+  ];
+
+  document.getElementById('uitlegTekst').innerHTML=blokken.map(b=>`
+    <div style="padding:8px 10px;background:var(--surface2);border-radius:4px;border-left:2px solid var(--border2);">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:5px;">${b.titel}</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.7;">${b.tekst}</div>
+    </div>`).join('');
+}
+
+function render(){
+  const{start,end}=getWindow();
+  const modelData=buildComposite(activeAsset,start,end);
+  renderMetrics(activeAsset,start,end,modelData.composite);
+  if(activeView==='composite')renderConfluence(modelData.components,start);
+  if(activeView==='backtest')renderBacktestStats(modelData.composite,start,end);
+  renderCharts(activeAsset,start,end,modelData);
+  renderSidebar(start,end,modelData);
+  renderToggles();
+  renderSeasonality(activeAsset,activeSeasYears);
+  renderUitleg(activeAsset,modelData,start,end);
+}
+
+function showTab(id){
+  document.querySelectorAll('.modal-body > div').forEach(d=>d.style.display='none');
+  document.getElementById(id).style.display='';
+  document.querySelectorAll('.modal-tab').forEach((t,i)=>{
+    const tabs=['tab-hoe','tab-planeten','tab-aspecten','tab-composite','tab-assets'];
+    t.classList.toggle('active',tabs[i]===id);
+  });
+}
+
+// Init asset dropdown kleur
+const assetSel=document.getElementById('assetSel');
+assetSel.value=activeAsset;
+assetSel.style.color=ASSET_COLORS[activeAsset];
+assetSel.style.borderColor=(ASSET_COLORS[activeAsset])+'99';
+
+document.getElementById('periodSel').onchange=render;
+startSel.onchange=render;
+loadPreset();
+loadLiveOHLC();
+
+// === DRAGGABLE PANEL RESIZE ===
+function initResize(handleId,panelVar,side){
+  const handle=document.getElementById(handleId);
+  if(!handle)return;
+  let startX,startW;
+  handle.addEventListener('mousedown',e=>{
+    startX=e.clientX;
+    const app=document.querySelector('.app');
+    const cols=getComputedStyle(app).gridTemplateColumns.split(' ');
+    // left=cols[0], right=cols[4]
+    startW=parseInt(side==='left'?cols[0]:cols[4]);
+    handle.classList.add('dragging');
+    const onMove=e=>{
+      const delta=side==='left'?e.clientX-startX:startX-e.clientX;
+      const newW=Math.max(140,Math.min(380,startW+delta));
+      document.documentElement.style.setProperty(side==='left'?'--left-w':'--right-w',newW+'px');
+    };
+    const onUp=()=>{
+      handle.classList.remove('dragging');
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+    };
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+    e.preventDefault();
+  });
+}
+initResize('resizeLeft','left','left');
+initResize('resizeRight','right','right');
+</script>
+<!-- INFO MODAL -->
+<div class="modal-overlay" id="infoModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>&#9789; Cyclisch Marktmodel — Uitleg &amp; Documentatie</h2>
+      <button class="modal-close" onclick="document.getElementById('infoModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="showTab('tab-hoe')">Hoe werkt het?</button>
+      <button class="modal-tab" onclick="showTab('tab-planeten')">Planeten</button>
+      <button class="modal-tab" onclick="showTab('tab-aspecten')">Aspecten &amp; Events</button>
+      <button class="modal-tab" onclick="showTab('tab-composite')">Composite lezen</button>
+      <button class="modal-tab" onclick="showTab('tab-assets')">Assets</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- TAB: HOE WERKT HET -->
+      <div id="tab-hoe">
+        <div class="info-section-title">Het idee achter het model</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.8;margin-bottom:14px;">
+          Het Cyclisch Marktmodel is gebaseerd op de hypothese dat planetaire bewegingen samenhangen met cycli in financiële markten. Dit is geen astrologie in de traditionele zin — het is een <strong style="color:var(--text)">kwantitatief cyclus-model</strong> waarbij astronomische data wordt gebruikt als basis voor periodieke golven. De composite golf is de som van meerdere planeetcycli, elk gewogen op hun historische correlatie met het asset.
+        </div>
+        <div class="how-step"><div class="how-step-num">1</div><div class="how-step-body"><strong>Astronomische data</strong> — Voor elke dag van 2022 tot 2029 berekent het model de positie van planeten via de Swiss Ephemeris. Dit is dezelfde data die professionele astronomen gebruiken.</div></div>
+        <div class="how-step"><div class="how-step-num">2</div><div class="how-step-body"><strong>Cyclische golven</strong> — Elke planeetverhouding (bijv. Maan/Zon = 29,5 dagen) genereert een sinus-golf. De golf is +1 bij conjunctie (planeten op dezelfde graad) en −1 bij oppositie (180° apart).</div></div>
+        <div class="how-step"><div class="how-step-num">3</div><div class="how-step-body"><strong>Weging</strong> — De gewichten in het linker paneel bepalen hoe zwaar elke cyclus meeweegt. Een gewicht van 0 = uitgeschakeld. Een gewicht van 2 = dubbel zo zwaar. Je kunt dit zelf aanpassen met de sliders.</div></div>
+        <div class="how-step"><div class="how-step-num">4</div><div class="how-step-body"><strong>Fase-ijking</strong> — De markt reageert niet altijd exact op de dag van een planetair event. Met de fase-sliders schuif je de golf voor of achteruit in de tijd, zodat hij beter aansluit op historische draaipunten.</div></div>
+        <div class="how-step"><div class="how-step-num">5</div><div class="how-step-body"><strong>Composite</strong> — De som van alle gewogen, fase-gecorrigeerde golven is de composite. Dit getal loopt van −1,0 (sterk bearish cyclisch signaal) tot +1,0 (sterk bullish cyclisch signaal).</div></div>
+        <div class="how-step"><div class="how-step-num">6</div><div class="how-step-body"><strong>Gebruik</strong> — Het model is een <strong>timing-filter</strong>, geen koopadvies. Een bullish composite betekent dat het cyclische ritme omhoog wijst — niet dat de koers per definitie stijgt. Combineer altijd met technische analyse.</div></div>
+
+        <div class="info-section-title">Belangrijke disclaimers</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.8;background:var(--surface2);padding:12px;border-radius:6px;border-left:3px solid var(--orange);">
+          ⚠ Dit model geeft <strong style="color:var(--text)">geen beleggingsadvies</strong>. Alle projecties zijn gebaseerd op historische cyclische patronen en zijn geen garantie voor toekomstige resultaten. Cycli kunnen falen, verschuiven of afwezig zijn in bepaalde marktomstandigheden. Gebruik dit model als aanvullend instrument naast andere analyses.
+        </div>
+      </div>
+
+      <!-- TAB: PLANETEN -->
+      <div id="tab-planeten" style="display:none">
+        <div class="info-section-title">Planetaire cycli in financiële markten</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.7;margin-bottom:14px;">Elke planeetverhouding heeft een vaste cyclus-periode. Kortere cycli (Maan, Mercurius) sturen kortetermijn momentum. Langere cycli (Jupiter/Saturn, Uranus) bepalen structurele trends.</div>
+        <div class="info-grid">
+
+          <div class="info-card">
+            <div class="info-card-icon">🌙</div>
+            <div class="info-card-title">Maan / Zon — Synodische Maancyclus</div>
+            <div class="info-card-period">29,5 dagen</div>
+            <div class="info-card-body">De kortste cyclus in het model. De maan beïnvloedt menselijk sentiment en emotie-gedreven handel. <strong>Nieuwe Maan</strong> = begin van cyclus, vaak een stilte-punt. <strong>Volle Maan</strong> = piek van energie, historisch een keerpunt in edelmetalen. Meest effectief voor <em>short-term timing</em> van entries en exits.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#d4a843;border-color:#d4a84344;background:#d4a84310">XAU</span>
+              <span class="mkt-tag" style="color:#9bbccc;border-color:#9bbccc44;background:#9bbccc10">XAG</span>
+              <span class="mkt-tag" style="color:#f7a030;border-color:#f7a03044;background:#f7a03010">BTC</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">☿</div>
+            <div class="info-card-title">Mercurius / Zon — Synodische cyclus</div>
+            <div class="info-card-period">116 dagen</div>
+            <div class="info-card-body">Mercurius staat voor communicatie, handel en logistiek. De bekende <strong>Mercurius Retrograde</strong> perioden (3x per jaar, ~3 weken) correleren historisch met verhoogde volatiliteit, miscommunicatie in markten en koersomkeringen. Sterk bij tech-gerelateerde assets en valuta.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#5b8af5;border-color:#5b8af544;background:#5b8af510">SPX</span>
+              <span class="mkt-tag" style="color:#e8556a;border-color:#e8556a44;background:#e8556a10">DXY</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">♀</div>
+            <div class="info-card-title">Venus / Zon — Synodische cyclus</div>
+            <div class="info-card-period">584 dagen</div>
+            <div class="info-card-body">Venus staat voor waarde, schoonheid en safe havens. De Venus-cyclus correleert sterk met goud en zilver — beide worden cultureel geassocieerd met rijkdom en bescherming. Een stijgende Venus-golf suggereert aantrekkingskracht naar edelmetalen. Venus Inferior Conjunctie (dichtst bij aarde) is een historisch sterk keerpunt voor XAU.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#d4a843;border-color:#d4a84344;background:#d4a84310">XAU</span>
+              <span class="mkt-tag" style="color:#9bbccc;border-color:#9bbccc44;background:#9bbccc10">XAG</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">♂</div>
+            <div class="info-card-title">Mars / Zon — Synodische cyclus</div>
+            <div class="info-card-period">780 dagen (~26 mnd)</div>
+            <div class="info-card-body">Mars staat voor energie, agressiviteit en actie. De Mars-cyclus drijft kortetermijn volatiliteit en energiemarkten. <strong>WTI olie</strong> reageert het sterkst op Mars. Bij conjunctie (Mars en Zon op zelfde graad) is er vaak een energiek keerpunt — kan zowel een top als een bodem zijn afhankelijk van de context.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#3ec87a;border-color:#3ec87a44;background:#3ec87a10">WTI</span>
+              <span class="mkt-tag" style="color:#b87333;border-color:#b8733344;background:#b8733310">COPPER</span>
+              <span class="mkt-tag" style="color:#5b8af5;border-color:#5b8af544;background:#5b8af510">SPX</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">♃</div>
+            <div class="info-card-title">Jupiter / Zon — Synodische cyclus</div>
+            <div class="info-card-period">399 dagen (~13 mnd)</div>
+            <div class="info-card-body">Jupiter staat voor expansie, optimisme en speculatie. De Jupiter-cyclus correleert sterk met risicobereidheid in markten. <strong>BTC</strong> reageert hier historisch het sterkst op — grote Bitcoin bull-runs starten vaak nabij Jupiter-conjuncties. Bij oppositie is er vaak tijdelijke afkoeling van speculatieve assets.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#f7a030;border-color:#f7a03044;background:#f7a03010">BTC</span>
+              <span class="mkt-tag" style="color:#5b8af5;border-color:#5b8af544;background:#5b8af510">SPX</span>
+              <span class="mkt-tag" style="color:#d4a843;border-color:#d4a84344;background:#d4a84310">XAU</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">♄</div>
+            <div class="info-card-title">Saturn / Zon — Synodische cyclus</div>
+            <div class="info-card-period">378 dagen (~12,5 mnd)</div>
+            <div class="info-card-body">Saturn staat voor contractie, realisme en discipline. Waar Jupiter expandeert, contraheert Saturn. De Dollar Index (DXY) en defensieve assets reageren hier het sterkst op. Saturn-conjuncties vallen historisch samen met momenten van schuldencrises, bezuinigingen of monetaire verkrapping.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#e8556a;border-color:#e8556a44;background:#e8556a10">DXY</span>
+              <span class="mkt-tag" style="color:#d4a843;border-color:#d4a84344;background:#d4a84310">XAU</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">♃♄</div>
+            <div class="info-card-title">Jupiter / Saturn — Grote Conjunctiecyclus</div>
+            <div class="info-card-period">~19,9 jaar (conjunctie) · ~9,9 jaar (helft)</div>
+            <div class="info-card-body">Dit is de <strong>krachtigste lange-termijn cyclus</strong> in het model. De Jupiter/Saturn conjunctie markeert historisch grote verschuivingen in economische regimes — van bull naar bear en vice versa. Merriman Market Research beschrijft deze cyclus als bepalend voor decenniale markttrends. De laatste conjunctie was december 2020 (het "Grote Samenvallen" in Waterman).</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#d4a843;border-color:#d4a84344;background:#d4a84310">XAU</span>
+              <span class="mkt-tag" style="color:#5b8af5;border-color:#5b8af544;background:#5b8af510">SPX</span>
+              <span class="mkt-tag" style="color:#9bbccc;border-color:#9bbccc44;background:#9bbccc10">XAG</span>
+              <span class="mkt-tag" style="color:#b87333;border-color:#b8733344;background:#b8733310">COPPER</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-icon">♅</div>
+            <div class="info-card-title">Uranus / Zon — Synodische cyclus</div>
+            <div class="info-card-period">370 dagen (~12 mnd)</div>
+            <div class="info-card-body">Uranus staat voor disruptie, revolutie en technologie. Plotselinge koersbreukken en paradigmaverschuivingen vallen historisch samen met Uranus-events. Sterk relevant voor <strong>BTC</strong> en tech-sectoren. Uranus is de planeet van het onverwachte — hoge gewichten verhogen de gevoeligheid voor plotselinge omkeringen.</div>
+            <div class="info-card-markets">
+              <span class="mkt-tag" style="color:#f7a030;border-color:#f7a03044;background:#f7a03010">BTC</span>
+              <span class="mkt-tag" style="color:#5b8af5;border-color:#5b8af544;background:#5b8af510">SPX</span>
+            </div>
+          </div>
+
+          <div class="info-card" style="grid-column:1/-1">
+            <div class="info-card-icon">♆</div>
+            <div class="info-card-title">Neptunus / Zon — Synodische cyclus</div>
+            <div class="info-card-period">368 dagen (~12 mnd)</div>
+            <div class="info-card-body">Neptunus staat voor illusie, speculatieve bubbels en verborgen krachten. De Neptunus-cyclus werkt langzaam en diffuus — moeilijk te pinpointen maar aanwezig op de achtergrond. Lage gewichten zijn hier normaal. Historisch correleert Neptunus met bubbel-formatie en het uiteenspringen ervan in speculatieve markten.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB: ASPECTEN -->
+      <div id="tab-aspecten" style="display:none">
+        <div class="info-section-title">Planetaire Aspecten</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.7;margin-bottom:14px;">Een aspect is de hoekverhouding tussen twee planeten vanuit het perspectief van de aarde. Bepaalde hoeken hebben specifieke energetische betekenissen die historisch correleren met marktbewegingen.</div>
+        <table class="info-table">
+          <tr><th>Symbool</th><th>Aspect</th><th>Hoek</th><th>Kleur in grafiek</th><th>Marktbetekenis</th></tr>
+          <tr>
+            <td>☌</td><td>Conjunctie</td><td>0°</td>
+            <td><span style="color:#5b8af5">━━</span> Blauw</td>
+            <td>Twee planeten op dezelfde graad. Versterkte gecombineerde energie. Kan een versnelling van de lopende trend markeren of een keerpunt — afhankelijk van de betrokken planeten. Sterk signaal.</td>
+          </tr>
+          <tr>
+            <td>☍</td><td>Oppositie</td><td>180°</td>
+            <td><span style="color:#e8556a">━━</span> Rood</td>
+            <td>Maximum spanning tussen twee planeten. Klassiek keerpuntmoment — top of bodem in de cyclus. Het sterkste single-event signaal in het model. Historisch hoog trefferpercentage.</td>
+          </tr>
+          <tr>
+            <td>□</td><td>Kwadrant (Kwadraat)</td><td>90°</td>
+            <td><span style="color:#9d6ff5">━━</span> Paars</td>
+            <td>Wrijving en conflict tussen twee cycli. Volatiliteitsmoment — de markt moet kiezen een richting. Vaak een halverwege punt in een trend, soms een versnelling of breuk.</td>
+          </tr>
+          <tr>
+            <td>△</td><td>Trine</td><td>120°</td>
+            <td><span style="color:#3ec87a">━━</span> Groen</td>
+            <td>Harmonisch aspect. Vloeiende energiestroom tussen planeten. Ondersteunt de lopende trend — zelden een keerpunt, vaker een bevestiging of continuatie.</td>
+          </tr>
+          <tr>
+            <td>⚹</td><td>Sextiel</td><td>60°</td>
+            <td><span style="color:#38bcd4">━━</span> Cyan</td>
+            <td>Licht positief aspect. Kansen en kleine kansen voor verandering. Zwakker dan trine of oppositie maar wel meetbaar in de data.</td>
+          </tr>
+        </table>
+
+        <div class="info-section-title" style="margin-top:20px;">Maanfasen</div>
+        <table class="info-table">
+          <tr><th>Symbool</th><th>Fase</th><th>Periode</th><th>Betekenis</th></tr>
+          <tr><td>●</td><td>Nieuwe Maan</td><td>Dag 0 van 29,5</td><td>Begin van maancyclus. Stille energie — markt oriënteert zich. Vaak een consolidatiepunt. Bij edelmetalen historisch een bodem of rust voor een nieuwe move.</td></tr>
+          <tr><td>🌓</td><td>Eerste Kwartier</td><td>Dag ~7</td><td>Toenemende spanning. Trend begint versnelling of weerstand te voelen. Let op voor breakouts.</td></tr>
+          <tr><td>○</td><td>Volle Maan</td><td>Dag ~15</td><td>Piek van maanenergie. Sterk keerpuntmoment voor goud, zilver en emotioneel-gedreven markten. Historisch een top of bodem in de kortetermijn cyclus.</td></tr>
+          <tr><td>🌗</td><td>Laatste Kwartier</td><td>Dag ~22</td><td>Afnemende energie. Momentum verliest kracht. Goede timing voor profit-taking of afbouw van posities in de richting van de maancyclus.</td></tr>
+        </table>
+
+        <div class="info-section-title" style="margin-top:20px;">Retrograde Perioden</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.8;background:var(--surface2);padding:12px;border-radius:6px;">
+          <strong style="color:var(--text)">℞ Retrograde</strong> — Een planeet lijkt achterwaarts te bewegen vanuit het perspectief van de aarde (optisch fenomeen door verschil in baansnelheid). Retrograde perioden staan bekend om het "terugkomen" op eerdere thema's:<br><br>
+          <strong style="color:#9d6ff5">Mercurius ℞</strong> (3x/jaar, ~3 weken): Communicatieproblemen, contractfouten, vertragingen. Verhoogde volatiliteit en koersomkeringen. Vermijd grote beslissingen.<br><br>
+          <strong style="color:#e8556a">Mars ℞</strong> (~2x per 4 jaar, ~2 mnd): Energieverlies, agressie naar binnen gericht. WTI en energiemarkten reageren hier sterk op. Vaak een langzamere, moeizamere marktfase.<br><br>
+          <strong style="color:#3ec87a">D Direct</strong> — Planeet hervat voorwaartse beweging. Vaak een opluchting of versnelling in de markt na de vertraagde retrograde periode.
+        </div>
+      </div>
+
+      <!-- TAB: COMPOSITE LEZEN -->
+      <div id="tab-composite" style="display:none">
+        <div class="info-section-title">De Composite Wave begrijpen</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.8;margin-bottom:14px;">De composite is de kern van het model. Het is een getal tussen −1,0 en +1,0 dat de gecombineerde cyclische kracht weergeeft op een bepaalde dag.</div>
+
+        <div class="composite-viz">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;">Waarde interpretatie</div>
+          <div style="font-size:9px;color:var(--green);margin-bottom:3px;">+0,75 tot +1,0 — Sterk bullish cyclisch signaal</div>
+          <div class="composite-bar"><div class="composite-fill" style="width:87%;background:linear-gradient(90deg,#3ec87a,#3ec87a88)"></div></div>
+          <div style="font-size:9px;color:#7fc8a0;margin:6px 0 3px;">+0,25 tot +0,75 — Zwak bullish</div>
+          <div class="composite-bar"><div class="composite-fill" style="width:55%;background:linear-gradient(90deg,#3ec87a55,#3ec87a22)"></div></div>
+          <div style="font-size:9px;color:var(--muted);margin:6px 0 3px;">−0,25 tot +0,25 — Neutraal / Zijwaarts</div>
+          <div class="composite-bar" style="background:#2a2f42"><div class="composite-fill" style="width:50%;background:#555"></div></div>
+          <div style="font-size:9px;color:#e8808a;margin:6px 0 3px;">−0,75 tot −0,25 — Zwak bearish</div>
+          <div class="composite-bar"><div class="composite-fill" style="width:55%;background:linear-gradient(90deg,#e8556a55,#e8556a22)"></div></div>
+          <div style="font-size:9px;color:var(--red);margin:6px 0 3px;">−1,0 tot −0,75 — Sterk bearish cyclisch signaal</div>
+          <div class="composite-bar"><div class="composite-fill" style="width:87%;background:linear-gradient(90deg,#e8556a,#e8556a88)"></div></div>
+        </div>
+
+        <table class="info-table">
+          <tr><th>Onderdeel</th><th>Wat zie je</th><th>Hoe gebruik je het</th></tr>
+          <tr><td>Gele lijn</td><td>De composite wave — altijd geel/goud</td><td>Lees de richting en positie. Stijgend = cyclisch momentum omhoog. Top = mogelijk keerpunt nadert.</td></tr>
+          <tr><td>Witte lijn</td><td>Werkelijke historische koers</td><td>Vergelijk met de composite. Waar lopen ze samen? Waar divergeren ze? Divergentie = mogelijk signaal.</td></tr>
+          <tr><td>Gestippelde lijn</td><td>Cyclische prijsprojectie (toekomst)</td><td>Niet een koersdoel maar een richting-indicatie. De composite weet de richting, niet het niveau.</td></tr>
+          <tr><td>Blauwe lijn</td><td>Vandaag — scheiding verleden/toekomst</td><td>Alles links = historisch gevalideerd. Alles rechts = projectie op basis van cyclisch ritme.</td></tr>
+          <tr><td>Groene driehoek ▲</td><td>Verwachte cyclische top</td><td>Moment waar meerdere cycli gelijktijdig een top bereiken. Potentieel bearish keerpunt — voorzichtigheid geboden.</td></tr>
+          <tr><td>Rode driehoek ▼</td><td>Verwachte cyclische bodem</td><td>Moment waar meerdere cycli gelijktijdig een bodem bereiken. Potentieel bullish keerpunt — kansen.</td></tr>
+          <tr><td>Correlatie (r)</td><td>Statistische samenhang composite/koers</td><td>r &gt; 0,3 = bruikbare correlatie. r &lt; 0 = inverse relatie (ook bruikbaar — draai interpretatie om).</td></tr>
+          <tr><td>Richtingsnauwkeurigheid</td><td>% correct voorspelde richting (5d)</td><td>&gt; 55% = beter dan random. &gt; 60% = sterk. Gebruik dit als kwaliteitsmeter voor het model op dit asset.</td></tr>
+        </table>
+
+        <div class="info-section-title" style="margin-top:18px;">Confluence — Kracht van keerpunten</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.8;">Een keerpunt is sterker naarmate meer cycli tegelijkertijd omkeren. Dit heet <strong style="color:var(--text)">confluence</strong>. In het rechter paneel zie je keerpunten gesorteerd op sterkte — de bovenste zijn het meest "druk bezet" door samenvallende cycli. Een confluent keerpunt waarbij ook een planetair event (conjunctie, oppositie) samenvalt is historisch het sterkste signaal.</div>
+      </div>
+
+      <!-- TAB: ASSETS -->
+      <div id="tab-assets" style="display:none">
+        <div class="info-section-title">Asset profielen</div>
+        <table class="info-table">
+          <tr><th>Asset</th><th>Dominante cycli</th><th>Karakter</th><th>Timing-tip</th></tr>
+          <tr>
+            <td><span style="color:#d4a843">XAU — Goud</span></td>
+            <td>Venus/Zon, Jupiter/Saturn, Maan/Zon</td>
+            <td>Safe haven. Reageert sterk op geopolitiek en monetair beleid. Langzame, ritmische bewegingen.</td>
+            <td>Volle Maan + Venus-conjunctie = sterk keerpuntsignaal voor goud. Let op September als seizoensmatig sterk.</td>
+          </tr>
+          <tr>
+            <td><span style="color:#9bbccc">XAG — Zilver</span></td>
+            <td>Maan/Zon, Venus/Zon, Mars/Zon</td>
+            <td>Dual-nature: safe haven én industrieel metaal. Extremere bewegingen dan goud. Hogere volatiliteit.</td>
+            <td>Zilver volgt goud maar beweegt harder. Maan-cyclus is hier het sterkst. Nieuwe Maan = potentiële bodem.</td>
+          </tr>
+          <tr>
+            <td><span style="color:#f7a030">BTC — Bitcoin</span></td>
+            <td>Jupiter/Zon, Uranus/Zon, Jupiter/Saturn</td>
+            <td>Speculatief, disruptief. Sterkste Jupiter-correlatie van alle assets. 4-jaar halving-cyclus overlapt met Jupiter-cyclus.</td>
+            <td>Jupiter-conjunctie = historisch start van bull-fase. Mercurius ℞ = verhoogd risico op crash of flash crash.</td>
+          </tr>
+          <tr>
+            <td><span style="color:#5b8af5">SPX — S&P 500</span></td>
+            <td>Jupiter/Saturn, Mars/Zon, Saturn/Zon</td>
+            <td>Breed marktsentiment. Reageert op alle grote cycli. Seizoenspatroon sterk (sell in May, Santa rally).</td>
+            <td>September/Oktober = cyclisch zwakste periode (seizoen + Saturn). November–April = sterkste periode.</td>
+          </tr>
+          <tr>
+            <td><span style="color:#e8556a">DXY — Dollar Index</span></td>
+            <td>Saturn/Zon, Uranus/Zon, Jupiter/Saturn</td>
+            <td>Inverse relatie met goud en grondstoffen. Traagste cyclus-response. Saturn dominant.</td>
+            <td>Sterke DXY = druk op XAU/XAG/BTC. Gebruik DXY als tegengewicht in multi-asset analyse.</td>
+          </tr>
+          <tr>
+            <td><span style="color:#3ec87a">WTI — Olie</span></td>
+            <td>Mars/Zon, Neptunus/Zon, Jupiter/Zon</td>
+            <td>Energiemarkt. Sterk geopolitiek gevoelig. Mars is dominant — energie en agressiviteit.</td>
+            <td>Mars-conjunctie = potentieel keerpunt in olie. Zomer = seizoensmatig hoge vraag. Winter = lagere vraag.</td>
+          </tr>
+          <tr>
+            <td><span style="color:#b87333">COPPER — Koper</span></td>
+            <td>Mars/Zon, Jupiter/Saturn, Jupiter/Zon</td>
+            <td>Industrieel metaal. "Dr. Copper" = economische thermometer. Stijgend koper = economische groei. Dalend = recessievrees.</td>
+            <td>Jupiter/Saturn cyclus bepaalt de grote trend. Mars stuurt korte volatiliteit. Sterk gecorreleerd met Chinese economie.</td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
