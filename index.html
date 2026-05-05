@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyclisch Marktmodel v13 — Fase-ijking</title>
+<title>Cyclisch Marktmodel v10 — Fase-ijking</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
@@ -182,6 +182,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
 .composite-viz{background:var(--surface2);border-radius:6px;padding:14px;margin:12px 0;}
 .composite-bar{height:12px;border-radius:6px;margin:4px 0;position:relative;overflow:hidden;}
 .composite-fill{height:100%;border-radius:6px;transition:width .3s;}
+.slider-row{display:flex;align-items:center;gap:4px;}
+.slider-btn{width:16px;height:16px;border:1px solid var(--border2);border-radius:3px;background:var(--surface2);color:var(--muted2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0;}
+.slider-btn:hover{border-color:var(--accent);color:var(--accent);}
+.comp-separator{border:none;border-top:1px solid var(--border);margin:8px 0 4px;}
+.tz-select{font-size:9px;padding:2px 5px;background:var(--surface2);color:var(--muted2);border:1px solid var(--border);border-radius:3px;font-family:monospace;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -352,6 +357,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
     </div>
 
     <!-- Components chart -->
+    <hr class="comp-separator">
     <div class="chart-card" style="min-height:155px;" id="compPanel">
       <div class="chart-top">
         <span class="chart-title">Cyclus Componenten — planeet · periode · gewicht</span>
@@ -384,7 +390,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;heigh
   <!-- RIGHT -->
   <div class="right-panel" id="rightPanel">
     <div class="sb-section">
-      <div class="sb-title">Aankomende Events</div>
+      <div class="sb-title" style="display:flex;align-items:center;justify-content:space-between;">
+        Aankomende Events
+        <select class="tz-select" id="tzSel" onchange="setTimezone(this.value)">
+          <option value="0">UT/UTC</option>
+          <option value="1">CET (UTC+1)</option>
+          <option value="2">CEST (UTC+2)</option>
+          <option value="-5">EST (UTC−5)</option>
+          <option value="-4">EDT (UTC−4)</option>
+          <option value="8">CST China (UTC+8)</option>
+        </select>
+      </div>
       <div id="eventList"></div>
     </div>
     <div class="sb-section">
@@ -462,7 +478,7 @@ const PRESETS={
   SPX:{long:{'Maan/Zon':0.4,'Mercurius/Zon':0.3,'Venus/Zon':0.6,'Mars/Zon':0.9,'Jupiter/Zon':1.0,'Jupiter/Saturn':1.5,'Saturn/Zon':1.1,'Uranus/Zon':0.4,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.4,'Mercurius/Zon':1.0,'Venus/Zon':0.5,'Mars/Zon':1.2,'Jupiter/Zon':0.5,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.1},note:'SPX: Jupiter/Saturn (Merriman). Mars voor korte volatiliteit.'},
   DXY:{long:{'Maan/Zon':0.3,'Mercurius/Zon':0.4,'Venus/Zon':0.5,'Mars/Zon':0.6,'Jupiter/Zon':0.7,'Jupiter/Saturn':1.0,'Saturn/Zon':1.5,'Uranus/Zon':0.6,'Neptunus/Zon':0.5},short:{'Maan/Zon':1.2,'Mercurius/Zon':1.1,'Venus/Zon':0.4,'Mars/Zon':0.9,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.6,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},note:'Dollar: Saturn dominant. Traagste cyclus-response.'},
   WTI:{long:{'Maan/Zon':0.5,'Mercurius/Zon':0.3,'Venus/Zon':0.4,'Mars/Zon':1.6,'Jupiter/Zon':0.8,'Jupiter/Saturn':0.8,'Saturn/Zon':0.7,'Uranus/Zon':0.4,'Neptunus/Zon':0.6},short:{'Maan/Zon':1.3,'Mercurius/Zon':0.8,'Venus/Zon':0.3,'Mars/Zon':1.8,'Jupiter/Zon':0.4,'Jupiter/Saturn':0.1,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.3},note:'WTI: Mars energie-cyclus dominant.'},
-  COPPER:{long:{'Maan/Zon':0.7,'Mercurius/Zon':0.2,'Venus/Zon':0.8,'Mars/Zon':1.5,'Jupiter/Zon':0.3,'Jupiter/Saturn':1.4,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.4,'Mercurius/Zon':0.5,'Venus/Zon':0.5,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.2,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},note:'Koper: industrieel metaal. Mars & Jupiter/Saturn dominant. Gevoelig voor economische cycli.'},
+  COPPER:{long:{'Maan/Zon':0.7,'Mercurius/Zon':0.2,'Venus/Zon':1.0,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.6,'Saturn/Zon':0.3,'Uranus/Zon':0.2,'Neptunus/Zon':0.2},short:{'Maan/Zon':1.4,'Mercurius/Zon':0.5,'Venus/Zon':0.5,'Mars/Zon':1.8,'Jupiter/Zon':0.3,'Jupiter/Saturn':0.2,'Saturn/Zon':0.2,'Uranus/Zon':0.1,'Neptunus/Zon':0.1},note:'Koper: industrieel metaal. Mars & Venus dominant. Jupiter/Saturn als langetermijn achtergrond.'},
 };
 
 const SEAS_DATA={
@@ -480,6 +496,12 @@ let activeAsset='XAU',activeModel='long',activeView='composite',activeSeasYears=
 let lastTurningPoints=[];
 let priceScale='linear'; // 'linear' of 'log'
 let activeFontSize=13;
+let activeTzOffset=0;
+
+function setTimezone(offset){
+  activeTzOffset=parseInt(offset);
+  render();
+}
 
 function setScale(s){
   priceScale=s;
@@ -752,13 +774,19 @@ function renderWeightSliders(){
         <div class="corr-bar-bg"><div class="corr-fill" style="width:${corrPct}%;background:${corrCol}"></div></div>
         <span class="corr-val" style="color:${corrCol}">${r>=0?'+':''}${r.toFixed(3)}</span>
       </div>`:''}
-      <input type="range" min="0" max="2" step="0.1" value="${w}"
-        style="accent-color:${col}" oninput="updateWeight('${planets}',parseFloat(this.value))">
+      <div class="slider-row">
+        <button class="slider-btn" onclick="updateWeight('${planets}',Math.max(0,${w}-0.1))">−</button>
+        <input type="range" min="0" max="2" step="0.1" value="${w}"
+          style="flex:1;accent-color:${col}" oninput="updateWeight('${planets}',parseFloat(this.value))">
+        <button class="slider-btn" onclick="updateWeight('${planets}',Math.min(2,${w}+0.1))">+</button>
+      </div>
       <div class="wbar-bg"><div class="wbar-fill" id="wb_${key}" style="width:${pct}%;background:${col}"></div></div>
       <div class="phase-row">
         <span class="phase-label" style="color:var(--muted)">Fase</span>
+        <button class="slider-btn" onclick="updatePhase('${planets}',${phase}-1,null)">−</button>
         <input type="range" min="-30" max="30" step="1" value="${phase}"
           style="flex:1;accent-color:${phaseCol}" oninput="updatePhase('${planets}',parseInt(this.value),this)">
+        <button class="slider-btn" onclick="updatePhase('${planets}',${phase}+1,null)">+</button>
         <span class="phase-val" id="pv_${key}" style="color:${phaseCol}">${phaseStr}</span>
       </div>
     </div>`;
@@ -1199,7 +1227,19 @@ function evTip(ev){
   return `<strong>${base}</strong>${pl}${t}<br><br>${tekst}`;
 }
 
-function renderSidebar(start,end,modelData){
+function applyTz(timeStr){
+  if(!timeStr||activeTzOffset===0)return timeStr;
+  // Parse "HH:MM UT" formaat
+  const m=timeStr.match(/(\d{2}):(\d{2})/);
+  if(!m)return timeStr;
+  let h=parseInt(m[1])+activeTzOffset;
+  const min=m[2];
+  // Handle overflow
+  h=((h%24)+24)%24;
+  const tzNames={0:'UT',1:'CET',2:'CEST','-5':'EST','-4':'EDT',8:'CST'};
+  const tzName=tzNames[activeTzOffset]||`UTC${activeTzOffset>=0?'+':''}${activeTzOffset}`;
+  return `${String(h).padStart(2,'0')}:${min} ${tzName}`;
+}
   const s=D.dates[start],e=D.dates[Math.min(end-1,D.dates.length-1)];
   const all=[];
   D.moon_phases.forEach(ev=>{if(ev.date>=s&&ev.date<=e)all.push({...ev,cat:'moon'});});
@@ -1211,7 +1251,7 @@ function renderSidebar(start,end,modelData){
   document.getElementById('eventList').innerHTML=future.map(ev=>
     `<div class="event-item" style="border-left-color:${evCol(ev)}">
       <div class="ei-date">${ev.date}</div><div class="ei-name">${ev.aspect}</div>
-      <div class="ei-sub">${ev.cat==='moon'?ev.time:(ev.planets||'')+(ev.time?' · '+ev.time:'')}</div>
+      <div class="ei-sub">${ev.cat==='moon'?applyTz(ev.time):(ev.planets||'')+(ev.time?' · '+applyTz(ev.time):'')}</div>
       <span class="tip">${evTip(ev)}</span>
     </div>`).join('');
   const wnd=activeModel==='long'?14:5;
