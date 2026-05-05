@@ -970,6 +970,8 @@ function setSpiralAnchor(date){
   spiralAnchor=date||null;
   render();
 }
+
+function renderSeasonality(asset,years){
   const avail=SEAS_AVAIL[asset]||[5,10];
   const yearNow=new Date().getFullYear();
 
