@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>★ Natal Transit Wiel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+/* ── Kleurenthema's ── */
+:root{
+  --bg-deep:#0e1020; --bg-mid:#0a0c18; --bg-card:#13162a;
+  --border:#1e2240; --border2:#2e334d;
+  --text:#c8d0e8; --muted:#4a5278; --muted2:#8890aa;
+  --accent:#e8d090;
+  /* Wiel kleuren */
+  --wheel-bg:#e8e4d8; --wheel-inner:#f0ece0;
+  --wheel-seg-even:#eeead8; --wheel-seg-odd:#e8e4d0;
+  --wheel-ring:#aaa; --wheel-ring-outer:#777;
+  --wheel-label:#1a2060;
+  --wheel-center-bg:#e8e4d8;
+}
+body.theme-dark{
+  --wheel-bg:#181c2e; --wheel-inner:#0f1224;
+  --wheel-seg-even:#141828; --wheel-seg-odd:#111526;
+  --wheel-ring:#2a2e50; --wheel-ring-outer:#3a3e60;
+  --wheel-label:#e8d090;
+  --wheel-center-bg:#0e1020;
+}
+body.theme-night{
+  --wheel-bg:#0a0800; --wheel-inner:#060500;
+  --wheel-seg-even:#0d0a02; --wheel-seg-odd:#080600;
+  --wheel-ring:#2a2200; --wheel-ring-outer:#3a3000;
+  --wheel-label:#ff6600;
+  --wheel-center-bg:#0a0800;
+  --bg-deep:#0a0600; --bg-mid:#060400; --bg-card:#100c00;
+  --border:#2a2000; --border2:#3a3000;
+  --text:#ff9900; --muted:#6a5000; --muted2:#9a7000;
+  --accent:#ff8800;
+}
+body.theme-light{
+  --wheel-bg:#f5f0e8; --wheel-inner:#faf7f0;
+  --wheel-seg-even:#f0ece0; --wheel-seg-odd:#ebe6d8;
+  --wheel-ring:#998; --wheel-ring-outer:#776;
+  --wheel-label:#1a2060;
+  --wheel-center-bg:#f5f0e8;
+  --bg-deep:#e8e4d8; --bg-mid:#ddd8cc; --bg-card:#f0ece0;
+  --border:#ccc8bc; --border2:#bbb8ac;
+  --text:#1a1a2e; --muted:#5a5868; --muted2:#3a3848;
+  --accent:#4a3800;
+}
+body.theme-modern{
+  --wheel-bg:#12131a; --wheel-inner:#0d0e15;
+  --wheel-seg-even:#141520; --wheel-seg-odd:#10111c;
+  --wheel-ring:#1e2040; --wheel-ring-outer:#2a2e60;
+  --wheel-label:#00ffcc;
+  --wheel-center-bg:#0a0b12;
+  --bg-deep:#0a0b12; --bg-mid:#07080f; --bg-card:#0f1020;
+  --border:#1a1e3a; --border2:#252a50;
+  --text:#b0e0ff; --muted:#3a4870; --muted2:#6080a0;
+  --accent:#00ffcc;
+}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{background:var(--bg-deep);color:var(--text);font-family:'Georgia',serif;display:grid;grid-template-rows:auto 1fr;grid-template-columns:1fr;height:100vh;}
+
+/* ── Top bar ── */
+#topbar{background:var(--bg-mid);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;z-index:10;}
+#topbar h1{font-size:19px;letter-spacing:.18em;color:var(--accent);font-family:'Courier New',monospace;text-transform:uppercase;white-space:nowrap;}
+.sep{color:#2e334d;font-size:20px;}
+.pbtn{font-size:14px;padding:4px 14px;border-radius:20px;cursor:pointer;font-family:'Courier New',monospace;border:1px solid #3e4560;background:#1a1e2e;color:#9aa0b8;transition:all .15s;}
+.pbtn.active{background:#e8d09018;border-color:var(--accent);color:var(--accent);}
+.orbtn{font-size:19px;padding:3px 9px;border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;border:1px solid #3e4560;background:#1a1e2e;color:#9aa0b8;transition:all .15s;}
+.orbtn.active{background:#e8d09015;border-color:var(--accent);color:var(--accent);}
+
+#dateDisplay{font-size:19px;font-weight:700;color:var(--accent);font-family:'Courier New',monospace;white-space:nowrap;}
+#dateOffset{font-size:19px;color:var(--muted);font-family:'Courier New',monospace;}
+#timeSlider{width:160px;height:4px;-webkit-appearance:none;background:linear-gradient(90deg,#e8d09055,#2e334d);border-radius:2px;cursor:pointer;}
+#timeSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#e8d090;border:2px solid #0a0c18;cursor:pointer;}
+.qbtn{font-size:14px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:'Courier New',monospace;border:1px solid #3e4560;background:#1a1e2e;color:#9aa0b8;}
+.qbtn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── Main layout: wheel left, panels right ── */
+#app{display:grid;grid-template-columns:1fr 360px;overflow:hidden;height:100%;}
+#wheelWrap{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#0e1020;position:relative;overflow:hidden;}
+#summaryStrip{width:100%;background:#080a14;border-top:1px solid var(--border);padding:10px 18px;font-size:14px;color:var(--text);line-height:1.6;flex-shrink:0;}
+canvas{display:block;}
+#rightPanel{overflow-y:auto;background:var(--bg-mid);border-left:1px solid #1e2240;display:flex;flex-direction:column;}
+
+/* ── Tabs ── */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:#080a14;flex-shrink:0;}
+.tab{flex:1;padding:9px 6px;font-size:19px;letter-spacing:.08em;text-transform:uppercase;font-family:'Courier New',monospace;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-panel{display:none;padding:14px;flex:1;}
+.tab-panel.active{display:block;}
+
+/* ── Cards ── */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:10px;}
+.card:last-child{margin-bottom:0;}
+.ctitle{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);font-family:'Courier New',monospace;}
+
+/* ── Planet table ── */
+.pr{display:grid;grid-template-columns:22px 1fr 1fr;align-items:center;padding:4px 0;border-bottom:1px solid #080a14;}
+.pr:last-child{border-bottom:none;}
+.psym{font-size:20px;text-align:center;}
+.pval{font-size:14px;font-weight:700;}
+.psign{font-size:14px;margin-left:2px;opacity:.55;}
+
+/* ── Aspect rows ── */
+.ar{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid #080a14;}
+.ar:last-child{border-bottom:none;}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.asym{font-size:19px;width:18px;text-align:center;flex-shrink:0;}
+.aname{font-size:14px;line-height:1.3;}
+.adesc{font-size:14px;color:var(--muted);margin-top:1px;}
+
+/* ── Bevindingen ── */
+.finding{padding:9px 11px;border-radius:5px;margin-bottom:8px;border-left:3px solid;}
+.finding:last-child{margin-bottom:0;}
+.badge{display:inline-block;font-size:14px;padding:1px 7px;border-radius:10px;font-family:'Courier New',monospace;margin-bottom:4px;font-weight:700;}
+.ftitle{font-size:14px;font-weight:700;margin-bottom:3px;line-height:1.3;}
+.fbody{font-size:19px;color:var(--muted2);line-height:1.65;}
+.fbody b{color:var(--text);}
+
+/* ── Events ── */
+.ev{padding:8px;border-radius:5px;margin-bottom:6px;cursor:pointer;border:1px solid var(--border);transition:all .15s;background:var(--bg-card);}
+.ev:hover{border-color:#e8d09044;background:#1a1e30;}
+.ev-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.ev-date{font-size:14px;font-weight:700;color:var(--accent);font-family:'Courier New',monospace;}
+.ev-type{font-size:14px;padding:1px 7px;border-radius:8px;font-family:'Courier New',monospace;}
+.ev-desc{font-size:14px;color:var(--text);margin-bottom:3px;}
+.ev-detail{font-size:19px;color:#5a6880;line-height:1.5;display:none;}
+.ev.open .ev-detail{display:block;}
+.ev-arrow{margin-left:auto;font-size:19px;color:var(--muted);transition:transform .2s;}
+.ev.open .ev-arrow{transform:rotate(90deg);}
+
+/* ── Uitleg (leek-vriendelijk) ── */
+.uitleg-section{margin-bottom:14px;}
+.uitleg-h{font-size:19px;font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:7px;}
+.uitleg-p{font-size:14px;color:var(--muted2);line-height:1.75;}
+.uitleg-p b{color:var(--text);}
+.uitleg-box{background:#0d0f1e;border-radius:5px;padding:10px 12px;margin-top:6px;border-left:3px solid #e8d09044;}
+.glossary-item{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.glossary-item:last-child{border-bottom:none;}
+.gterm{color:var(--accent);font-weight:700;margin-bottom:2px;}
+.gdef{color:var(--muted2);line-height:1.6;}
+
+/* ── Piek scanner ── */
+.peak-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #080a14;cursor:pointer;}
+.peak-row:hover{background:#ffffff06;border-radius:4px;}
+.peak-row:last-child{border-bottom:none;}
+.peak-score{font-size:19px;font-weight:700;color:#f7a030;font-family:'Courier New',monospace;min-width:30px;text-align:center;flex-shrink:0;}
+.peak-bar{height:5px;border-radius:3px;background:linear-gradient(90deg,#e8d090,#f7a030);margin-top:4px;}
+
+/* ── Event detail modal ── */
+#eventModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;}
+#eventModal.open{display:flex;}
+#eventModalBox{background:var(--bg-card);border:1px solid var(--border2);border-radius:10px;padding:24px;max-width:480px;width:90%;position:relative;}
+#eventModalClose{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div id="topbar">
+  <h1>★ Natal Transit Wiel</h1>
+  <span class="sep">|</span>
+  <span style="font-size:13px;color:var(--muted);font-family:'Courier New',monospace;">Asset:</span>
+  <select id="presetSel" onchange="setPreset(this.value)"
+    style="font-size:13px;padding:4px 10px;background:var(--bg-card);color:var(--accent);border:1px solid var(--border2);border-radius:6px;font-family:'Courier New',monospace;cursor:pointer;">
+    <optgroup label="── Crypto ──">
+      <option value="btc">₿ Bitcoin (3 jan 2009)</option>
+      <option value="eth">Ξ Ethereum (30 jul 2015)</option>
+    </optgroup>
+    <optgroup label="── Edelmetalen ──">
+      <option value="gold">◎ Goud COMEX (31 dec 1974)</option>
+      <option value="silver">◈ Zilver COMEX (12 jul 1933)</option>
+      <option value="platinum">Pt Platina futures (4 jan 1960)</option>
+      <option value="palladium">Pd Palladium (5 jan 1977)</option>
+      <option value="copper">Cu Koper COMEX (28 jul 1959)</option>
+    </optgroup>
+    <optgroup label="── Indices ──">
+      <option value="sp500">S&amp;P 500 (4 mrt 1957)</option>
+      <option value="dow">Dow Jones (26 mei 1896)</option>
+      <option value="nasdaq">Nasdaq (8 feb 1971)</option>
+      <option value="nyse">NYSE (17 mei 1792)</option>
+    </optgroup>
+    <optgroup label="── Valuta ──">
+      <option value="dxy">US Dollar / Fed (23 dec 1913)</option>
+      <option value="euro">Euro (1 jan 1999)</option>
+    </optgroup>
+    <optgroup label="── Hemelstand ──">
+      <option value="transit">☽ Transit only (nu)</option>
+    </optgroup>
+  </select>
+  <span class="sep">|</span>
+  <div>
+    <div id="dateDisplay">28 mei 2026</div>
+    <div id="dateOffset">Vandaag</div>
+  </div>
+  <button class="qbtn" onclick="stepDay(-1)" style="font-size:18px;padding:0px 10px;font-weight:700;line-height:26px;" title="Een dag terug">−</button>
+  <input type="range" id="timeSlider" min="-365" max="365" value="0" step="1" oninput="onSlider(this.value)" title="Schuif door de tijd">
+  <button class="qbtn" onclick="stepDay(1)"  style="font-size:18px;padding:0px 10px;font-weight:700;line-height:26px;" title="Een dag vooruit">+</button>
+  <button class="qbtn" onclick="jumpDays(-90)">−3m</button>
+  <button class="qbtn" onclick="jumpDays(-30)">−1m</button>
+  <button class="qbtn" onclick="jumpDays(0)">Nu</button>
+  <button class="qbtn" onclick="jumpDays(30)">+1m</button>
+  <button class="qbtn" onclick="jumpDays(90)">+3m</button>
+  <span class="sep">|</span>
+  <span style="font-size:13px;color:var(--muted);font-family:'Courier New',monospace;">Orb:</span>
+  <button class="orbtn" id="orb_exact"  onclick="setOrb('exact')">Exact (0.5°)</button>
+  <button class="orbtn active" id="orb_gann" onclick="setOrb('gann')">Gann (1°)</button>
+  <button class="orbtn" id="orb_tight"  onclick="setOrb('tight')">Strak (2°)</button>
+  <button class="orbtn" id="orb_modern" onclick="setOrb('modern')">Modern (6°)</button>
+  <span class="sep">|</span>
+  <span style="font-size:13px;color:var(--muted);font-family:'Courier New',monospace;">Thema:</span>
+  <button class="orbtn" id="th_klassiek" onclick="setTheme('klassiek')">Klassiek</button>
+  <button class="orbtn" id="th_modern"   onclick="setTheme('modern')">Modern</button>
+  <button class="orbtn active" id="th_dark" onclick="setTheme('dark')">Dark</button>
+  <button class="orbtn" id="th_night"    onclick="setTheme('night')">Night</button>
+  <button class="orbtn" id="th_light"    onclick="setTheme('light')">Light</button>
+</div>
+
+<!-- App grid -->
+<div id="tooltip" style="display:none;position:fixed;background:var(--bg-card);border:1px solid #e8d09066;border-radius:6px;padding:7px 12px;font-size:14px;color:var(--accent);font-family:'Courier New',monospace;pointer-events:none;z-index:50;line-height:1.6;"></div>
+<div id="app">
+  <div id="wheelWrap">
+    <canvas id="wheel"></canvas>
+    <div id="summaryStrip">
+      <span id="summaryText" style="color:var(--muted);">Analyseer de hemelstand met de preset-knoppen bovenin...</span>
+    </div>
+  </div>
+  <div id="rightPanel">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('tab-pos')">Posities</div>
+      <div class="tab" onclick="showTab('tab-asp')">Aspecten</div>
+      <div class="tab" onclick="showTab('tab-events')">Bijzonderheden</div>
+      <div class="tab" onclick="showTab('tab-pieken')">⚡ Pieken</div>
+      <div class="tab" onclick="showTab('tab-uitleg')">? Uitleg</div>
+    </div>
+
+    <!-- Posities tab -->
+    <div class="tab-panel active" id="tab-pos">
+      <div class="card">
+        <div class="ctitle" id="tblTitle">Planeet posities</div>
+        <div id="ptable"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">★ Bevindingen</div>
+        <div id="findings"></div>
+      </div>
+    </div>
+
+    <!-- Aspecten tab -->
+    <div class="tab-panel" id="tab-asp">
+      <div class="card">
+        <div class="ctitle">Actieve aspecten</div>
+        <div id="asplist"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Aspect legenda</div>
+        <div style="font-size:14px;color:var(--muted2);line-height:2;">
+          <span style="color:#00aa44">☌</span> Conjunctie (0°) — planeten op zelfde graad, krachtigst<br>
+          <span style="color:#cc2233">☍</span> Oppositie (180°) — tegenovergesteld, spanning/keerpunt<br>
+          <span style="color:#2255cc">△</span> Trine (120°) — vloeiend, ondersteunend<br>
+          <span style="color:#cc6600">□</span> Vierkant (90°) — wrijving, uitdagend maar actief<br>
+          <span style="color:#8844cc">⚹</span> Sextiel (60°) — lichte kans, stimulerend
+        </div>
+      </div>
+    </div>
+
+    <!-- Bijzonderheden tab -->
+    <div class="tab-panel" id="tab-events">
+      <div class="card">
+        <div class="ctitle">Komende bijzonderheden · klik voor uitleg</div>
+        <div id="eventTimeline"></div>
+      </div>
+    </div>
+
+    <!-- Pieken tab -->
+    <div class="tab-panel" id="tab-pieken">
+      <div class="card">
+        <div class="ctitle">⚡ Energie-piek instellingen</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:19px;color:var(--muted);">Scan:</span>
+            <button class="qbtn" id="scan30"  onclick="scanPeaks(30)">30d</button>
+            <button class="qbtn" id="scan90"  onclick="scanPeaks(90)">90d</button>
+            <button class="qbtn" id="scan180" onclick="scanPeaks(180)" style="color:var(--accent);border-color:#e8d09066;">180d</button>
+            <button class="qbtn" id="scan365" onclick="scanPeaks(365)">365d</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:19px;color:var(--muted);">Min aspecten:</span>
+            <select id="minAspects" onchange="scanPeaks(currentScanDays)" style="font-size:19px;padding:2px 6px;background:#0d0f1e;color:var(--text);border:1px solid #2e334d;border-radius:4px;font-family:'Courier New',monospace;">
+              <option value="2">≥ 2</option><option value="3" selected>≥ 3</option><option value="4">≥ 4</option><option value="5">≥ 5</option>
+            </select>
+            <span style="font-size:19px;color:var(--muted);">Piek-orb:</span>
+            <select id="peakOrbSel" onchange="scanPeaks(currentScanDays)" style="font-size:19px;padding:2px 6px;background:#0d0f1e;color:var(--text);border:1px solid #2e334d;border-radius:4px;font-family:'Courier New',monospace;">
+              <option value="0.5">0.5° ultra-exact</option>
+              <option value="1" selected>1° Gann</option>
+              <option value="1.5">1.5°</option>
+              <option value="2">2°</option>
+            </select>
+          </div>
+        </div>
+        <div id="peakExplain" style="font-size:19px;color:var(--muted);margin-top:8px;line-height:1.6;padding:8px;background:#0d0f1e;border-radius:4px;">
+          Momenten waarop meerdere aspecten tegelijk bijna exact zijn. Klik op een datum om het wiel daarheen te springen.
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Resultaten</div>
+        <div id="peakList"></div>
+      </div>
+    </div>
+
+    <!-- Uitleg tab -->
+    <div class="tab-panel" id="tab-uitleg">
+      <div class="uitleg-section">
+        <div class="uitleg-h">🌐 Wat is een natal chart?</div>
+        <div class="uitleg-p">Een natal chart (geboortehoroscoop) is een kaart van de hemel op het moment dat iets "geboren" werd — een persoon, een bedrijf, of een financieel instrument. Financieel astrologen gebruiken dit als referentiepunt: wanneer een planeet vandaag een punt uit de natal chart "raakt", kan dat een marktsignaal geven.</div>
+        <div class="uitleg-box">Denk aan het als een vingerafdruk van het moment. Bitcoin's "geboorte" (3 jan 2009) geeft BTC een eigen planetaire vingerafdruk. Als Jupiter vandaag die plek passeert, kijken astrologen of dat historisch samenvalt met prijsbewegingen.</div>
+      </div>
+
+      <div class="uitleg-section">
+        <div class="uitleg-h">🔵 Binnenste ring = Natal</div>
+        <div class="uitleg-p">De <b>binnenste ring</b> (heldere bolletjes) toont waar de planeten stonden op de geboortedatum. Deze bewegen niet — het zijn vaste referentiepunten.</div>
+      </div>
+
+      <div class="uitleg-section">
+        <div class="uitleg-h">○ Buitenste ring = Transit (nu)</div>
+        <div class="uitleg-p">De <b>buitenste ring</b> (gestippelde bolletjes) toont waar de planeten vandaag staan. Deze bewegen continu. Gebruik de slider bovenin om te zien hoe ze door de tijd bewegen.</div>
+      </div>
+
+      <div class="uitleg-section">
+        <div class="uitleg-h">📐 Wat zijn aspecten?</div>
+        <div class="uitleg-p">Aspecten zijn hoeken tussen planeten. Bepaalde hoeken worden als "actief" beschouwd:<br><br>
+          <b style="color:#00aa44">Conjunctie (0°)</b> — twee planeten op dezelfde graad. Sterkste invloed, kan beide kanten op.<br>
+          <b style="color:#cc2233">Oppositie (180°)</b> — tegenover elkaar. Spanning, mogelijke keerpunten.<br>
+          <b style="color:#2255cc">Trine (120°)</b> — vloeiende harmonie, ondersteunend.<br>
+          <b style="color:#cc6600">Vierkant (90°)</b> — wrijving en actie, uitdagend maar niet altijd negatief.
+        </div>
+      </div>
+
+      <div class="uitleg-section">
+        <div class="uitleg-h">📏 Wat is een "orb"?</div>
+        <div class="uitleg-p">Een orb is de toegestane afwijking van een exact aspect. <b>Gann gebruikte 1°</b> — alleen als planeten binnen 1° van een exact aspect staan telt het mee. Hoe kleiner de orb, hoe exacter (en zeldzamer) het signaal.</div>
+        <div class="uitleg-box">
+          <b>Exact (0°)</b> — alleen perfecte raakpunten, ultrazelden<br>
+          <b>Gann (1°)</b> — strikt, de meest gebruikte methode in financiële astrologie<br>
+          <b>Strak (2°)</b> — iets ruimer, nog altijd betrouwbaar<br>
+          <b>Modern (6°)</b> — standaard westerse astrologie, veel meer signalen
+        </div>
+      </div>
+
+      <div class="uitleg-section">
+        <div class="uitleg-h">⚡ Wat zijn energie-pieken?</div>
+        <div class="uitleg-p">Dit zijn momenten waarop <b>meerdere aspecten tegelijk</b> bijna exact zijn. Crypto Damus en andere financieel astrologen letten specifiek op dit soort "stapelmomenten" — ze beschouwen dit als de sterkste energie-concentraties voor mogelijke koersbewegingen.</div>
+      </div>
+
+      <div class="uitleg-section">
+        <div class="uitleg-h">📖 Begrippenlijst</div>
+        <div class="card" style="padding:10px 12px;">
+          <div class="glossary-item"><div class="gterm">Natal / Geboortekaart</div><div class="gdef">De hemelstand op het moment van "geboorte" van een asset of persoon.</div></div>
+          <div class="glossary-item"><div class="gterm">Transit</div><div class="gdef">De huidige positie van een planeet. Transits "activeren" natal punten als ze samenvallen.</div></div>
+          <div class="glossary-item"><div class="gterm">Stellium</div><div class="gdef">Drie of meer planeten in hetzelfde teken — geconcentreerde energie.</div></div>
+          <div class="glossary-item"><div class="gterm">Ingress</div><div class="gdef">Moment waarop een planeet een nieuw sterrenbeeld betreedt — markttechnisch een omslagpunt.</div></div>
+          <div class="glossary-item"><div class="gterm">Generationeel aspect</div><div class="gdef">Aspect tussen langzame planeten (bijv. Saturnus-Neptunus) dat eens per decennia of langer voorkomt.</div></div>
+          <div class="glossary-item"><div class="gterm">Confluence</div><div class="gdef">Meerdere signalen die tegelijk hetzelfde aangeven — versterkt de betrouwbaarheid.</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end rightPanel -->
+</div><!-- end app -->
+
+<!-- Event detail modal -->
+<div id="eventModal">
+  <div id="eventModalBox">
+    <button id="eventModalClose" onclick="closeModal()">✕</button>
+    <div id="eventModalContent"></div>
+  </div>
+</div>
+
+<script>
+// ── Constanten ────────────────────────────────────────────────────────────────
+const ZNL=['Ram','Stier','Tweelingen','Kreeft','Leeuw','Maagd','Weegschaal','Schorpioen','Boogschutter','Steenbok','Waterman','Vissen'];
+const ZSYM=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+const ZCOL=['#c86040','#a09060','#6090c0','#3090b0','#c09830','#508048','#c07030','#802030','#906020','#406080','#388090','#604888'];
+const PSYM={Zon:'☉',Maan:'☽',Mercurius:'☿',Venus:'♀',Mars:'♂',Jupiter:'♃',Saturnus:'♄',Uranus:'♅',Neptunus:'♆'};
+const PCOL={Zon:'#f0c840',Maan:'#b0bcdc',Mercurius:'#60c0dc',Venus:'#f09020',Mars:'#d84050',Jupiter:'#9870e8',Saturnus:'#4878e0',Uranus:'#38c080',Neptunus:'#38b8c0'};
+const PORDER=['Zon','Maan','Mercurius','Venus','Mars','Jupiter','Saturnus','Uranus','Neptunus'];
+
+const ORB_SCHOOLS={
+  exact: {conj:0.5,opp:0.5,trine:0.5,square:0.5,sext:0.5, label:'Exact (0.5°)', desc:'Bijna perfecte raakpunten — zoals Crypto Damus gebruikt. Binnen 0.5° van exact aspect'},
+  gann:  {conj:1.0,opp:1.0,trine:1.0,square:1.0,sext:1.0, label:'Gann (1°)',    desc:'W.D. Gann — strikt 1° voor alle aspecten, standaard in financiële astrologie'},
+  tight: {conj:2.0,opp:2.0,trine:2.0,square:2.0,sext:2.0, label:'Strak (2°)',   desc:'Iets ruimer dan Gann, nog altijd precies'},
+  modern:{conj:6.0,opp:6.0,trine:5.0,square:5.0,sext:4.0, label:'Modern (6°)',  desc:'Standaard westerse astrologie — conjunctie 6°, trine 5°, sextiel 4°'},
+};
+let currentOrbSchool='gann';
+
+function getOrb(a){
+  const s=ORB_SCHOOLS[currentOrbSchool];
+  return a===0?s.conj:a===180?s.opp:a===120?s.trine:a===90?s.square:s.sext;
+}
+
+function dateToJD(y,m,d,h=0){
+  const a=Math.floor((14-m)/12),yr=y+4800-a,mo=m+12*a-3;
+  return d+Math.floor((153*mo+2)/5)+365*yr+Math.floor(yr/4)-Math.floor(yr/100)+Math.floor(yr/400)-32045+(h/24);
+}
+function lonCalc(planet,jd){
+  const T=(jd-2451545)/36525,r=Math.PI/180;
+  let L;
+  switch(planet){
+    case 'Zon':L=280.46646+36000.76983*T+1.9146*Math.sin((357.5291+35999.0503*T)*r);break;
+    case 'Maan':L=218.3165+481267.8813*T+6.289*Math.sin((134.963+477198.867*T)*r);break;
+    case 'Mercurius':L=252.2509+149472.6746*T+Math.sin((168.6+14917*T)*r);break;
+    case 'Venus':L=181.9798+58517.8156*T+0.7758*Math.sin((212.83+58551.13*T)*r);break;
+    case 'Mars':L=355.433+19140.2993*T+0.6535*Math.sin((19.373+19139.858*T)*r);break;
+    case 'Jupiter':L=34.3515+3034.9057*T+0.3328*Math.sin((18.82+1234.91*T)*r);break;
+    case 'Saturnus':L=50.0774+1222.1138*T+0.3479*Math.sin((153+1220*T)*r);break;
+    case 'Uranus':L=314.055+428.4882*T;break;
+    case 'Neptunus':L=304.3487+218.4862*T;break;
+  }
+  return((L%360)+360)%360;
+}
+function calcAll(jd){
+  const o={};
+  PORDER.forEach(p=>{
+    const l=lonCalc(p,jd);
+    o[p]={lon:l,sign:ZNL[Math.floor(l/30)],deg:Math.floor(l%30),min:Math.floor((l%1)*60)};
+  });
+  return o;
+}
+
+const TODAY_JD=dateToJD(2026,5,28,12);
+const BTC_JD=dateToJD(2009,1,3,18.25);
+const GOLD_JD=dateToJD(1974,12,31,14);
+
+const SP500_JD   = dateToJD(1957,3,4,9.5);
+const NYSE_JD    = dateToJD(1792,5,17,9);
+const ETH_JD     = dateToJD(2015,7,30,15.5);
+const DXY_JD     = dateToJD(1913,12,23,12);
+const DOW_JD     = dateToJD(1896,5,26,9);
+const NASDAQ_JD  = dateToJD(1971,2,8,9.5);
+const EURO_JD    = dateToJD(1999,1,1,0);
+const SILVER_JD  = dateToJD(1933,7,12,9);
+const PLATINUM_JD= dateToJD(1960,1,4,9);
+const PALLADIUM_JD=dateToJD(1977,1,5,9);
+const COPPER_JD  = dateToJD(1959,7,28,9);
+
+const PRESETS={
+  btc:     {label:'Bitcoin · 3 jan 2009',          center:'₿',  col:'#f0c840',natalJD:BTC_JD,      tbl:'BTC natal · transit'},
+  eth:     {label:'Ethereum · 30 jul 2015',         center:'Ξ',  col:'#9870e8',natalJD:ETH_JD,      tbl:'ETH natal · transit'},
+  gold:    {label:'Goud COMEX · 31 dec 1974',       center:'Au', col:'#f0c840',natalJD:GOLD_JD,     tbl:'XAU natal · transit'},
+  silver:  {label:'Zilver COMEX · 12 jul 1933',     center:'Ag', col:'#c0c8d8',natalJD:SILVER_JD,   tbl:'XAG natal · transit'},
+  platinum:{label:'Platina · 4 jan 1960',           center:'Pt', col:'#d0d8e8',natalJD:PLATINUM_JD, tbl:'XPT natal · transit'},
+  palladium:{label:'Palladium · 5 jan 1977',        center:'Pd', col:'#b8c8d0',natalJD:PALLADIUM_JD,tbl:'Pd natal · transit'},
+  copper:  {label:'Koper COMEX · 28 jul 1959',      center:'Cu', col:'#d4785a',natalJD:COPPER_JD,   tbl:'Koper natal · transit'},
+  sp500:   {label:'S&P 500 · 4 mrt 1957',           center:'S',  col:'#4878e0',natalJD:SP500_JD,    tbl:'S&P natal · transit'},
+  dow:     {label:'Dow Jones · 26 mei 1896',        center:'D',  col:'#c07030',natalJD:DOW_JD,      tbl:'DJIA natal · transit'},
+  nasdaq:  {label:'Nasdaq · 8 feb 1971',            center:'Nq', col:'#38a8e8',natalJD:NASDAQ_JD,   tbl:'Nasdaq natal · transit'},
+  nyse:    {label:'NYSE · 17 mei 1792',             center:'N',  col:'#38c080',natalJD:NYSE_JD,     tbl:'NYSE natal · transit'},
+  dxy:     {label:'US Dollar / Fed · 23 dec 1913',  center:'$',  col:'#60c0dc',natalJD:DXY_JD,     tbl:'USD natal · transit'},
+  euro:    {label:'Euro · 1 jan 1999',              center:'€',  col:'#5060d0',natalJD:EURO_JD,     tbl:'EUR natal · transit'},
+  transit: {label:'Huidige hemelstand',             center:'☽',  col:'#6090c8',natalJD:null,        tbl:'Transit posities'}
+};
+let curPreset='btc';
+let offsetDays=0;
+
+// ── Canvas setup ──────────────────────────────────────────────────────────────
+const cv=document.getElementById('wheel');
+const ctx=cv.getContext('2d');
+let W,H,cx,cy,RO,RZ,RS,RI,RN,RT,RC;
+
+function sizeCanvas(){
+  const wrap=document.getElementById('wheelWrap');
+  const stripH=document.getElementById('summaryStrip')?.offsetHeight||70;
+  const sz=Math.min(wrap.clientWidth,wrap.clientHeight-stripH)-20;
+  W=sz;H=sz;cv.width=sz;cv.height=sz;
+  cx=sz/2;cy=sz/2;
+  RO=sz/2-4; RZ=RO-28; RS=RO-52; RI=RO-100; RN=RI-32; RT=RI-14; RC=sz/20;
+}
+
+function la(deg){return(deg-90)*Math.PI/180;}
+
+// ── Spread algorithm ──────────────────────────────────────────────────────────
+function spreadPlanets(positions,minSep=14){
+  const s=positions.map((p,i)=>({...p,i,draw:p.lon})).sort((a,b)=>a.lon-b.lon);
+  for(let pass=0;pass<10;pass++){
+    for(let i=0;i<s.length;i++){
+      const prev=s[(i-1+s.length)%s.length];
+      let gap=s[i].draw-prev.draw;
+      if(gap<0)gap+=360;
+      if(gap<minSep){const push=(minSep-gap)/2;s[i].draw+=push;prev.draw-=push;}
+    }
+  }
+  s.forEach(p=>{p.draw=((p.draw%360)+360)%360;});
+  return s;
+}
+
+// ── Aspect finder ─────────────────────────────────────────────────────────────
+const ASP_DEF=[
+  {a:0,  col:'#00aa44',dash:[],    lw:1.2,sym:'☌',name:'Conjunctie'},
+  {a:180,col:'#cc2233',dash:[4,3], lw:1.0,sym:'☍',name:'Oppositie'},
+  {a:120,col:'#2255cc',dash:[3,3], lw:0.8,sym:'△',name:'Trine'},
+  {a:90, col:'#cc6600',dash:[2,4], lw:0.8,sym:'□',name:'Vierkant'},
+  {a:60, col:'#8844cc',dash:[2,4], lw:0.6,sym:'⚹',name:'Sextiel'},
+];
+
+function findAspects(natal,transit){
+  const found=[];
+  const base=natal||transit;
+  Object.entries(base).forEach(([n1,p1])=>{
+    Object.entries(transit).forEach(([n2,p2])=>{
+      if(!natal&&n1>=n2)return;
+      if(natal&&n1===n2)return;
+      ASP_DEF.forEach(asp=>{
+        const orb=getOrb(asp.a);
+        const tgt=(p1.lon+asp.a)%360;
+        let df=Math.abs(p2.lon-tgt)%360;
+        if(df>180)df=360-df;
+        if(df>orb)return;
+        found.push({...asp,p1:n1,p2:n2,orb:df.toFixed(2),ex:1-df/orb,isNatal:!!natal});
+      });
+    });
+  });
+  return found.sort((a,b)=>b.ex-a.ex);
+}
+
+// ── Draw functions ────────────────────────────────────────────────────────────
+function drawBG(){
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,RO,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--wheel-bg').trim()||'#e8e4d8';ctx.fillRect(0,0,W,H);
+  for(let i=0;i<12;i++){
+    const a1=la(i*30),a2=la((i+1)*30);
+    ctx.beginPath();ctx.moveTo(cx+RZ*Math.cos(a1),cy+RZ*Math.sin(a1));
+    ctx.arc(cx,cy,RO,a1,a2);ctx.arc(cx,cy,RZ,a2,a1,true);ctx.closePath();
+    ctx.fillStyle=ZCOL[i]+'44';ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,RI,a1,a2);ctx.closePath();
+    ctx.fillStyle=i%2===0?(getComputedStyle(document.body).getPropertyValue('--wheel-seg-even').trim()||'#eeead8'):(getComputedStyle(document.body).getPropertyValue('--wheel-seg-odd').trim()||'#e8e4d0');ctx.fill();
+  }
+  ctx.beginPath();ctx.arc(cx,cy,RI-28,0,Math.PI*2);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--wheel-inner').trim()||'#f0ece0';ctx.fill();
+  ctx.restore();
+}
+
+function drawZodiac(){
+  for(let d=0;d<360;d++){
+    const a=la(d),isMaj=d%10===0,isMed=d%5===0;
+    const r1=isMaj?RZ+2:isMed?RZ+5:RZ+8;
+    ctx.strokeStyle=isMaj?'#888':'#bbb';ctx.lineWidth=isMaj?1:.5;
+    ctx.beginPath();ctx.moveTo(cx+r1*Math.cos(a),cy+r1*Math.sin(a));
+    ctx.lineTo(cx+RO*Math.cos(a),cy+RO*Math.sin(a));ctx.stroke();
+  }
+  for(let i=0;i<12;i++){
+    const a=la(i*30);
+    ctx.strokeStyle='#888';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx+RI*Math.cos(a),cy+RI*Math.sin(a));
+    ctx.lineTo(cx+RO*Math.cos(a),cy+RO*Math.sin(a));ctx.stroke();
+    const aMid=la(i*30+15),xm=cx+RS*Math.cos(aMid),ym=cy+RS*Math.sin(aMid);
+    ctx.save();ctx.translate(xm,ym);ctx.rotate(aMid+Math.PI/2);
+    ctx.font='bold 22px serif';ctx.fillStyle=ZCOL[i];
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ZSYM[i],0,-10);
+    ctx.font='bold 11px Georgia';ctx.fillStyle=ZCOL[i];ctx.fillText(ZNL[i],0,8);
+    ctx.restore();
+  }
+  const ringOuter=getComputedStyle(document.body).getPropertyValue('--wheel-ring-outer').trim()||'#777';
+  const ringInner=getComputedStyle(document.body).getPropertyValue('--wheel-ring').trim()||'#aaa';
+  [RO,RZ,RI,RI-28].forEach((r,i)=>{
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle=i===0?ringOuter:ringInner;ctx.lineWidth=i===0?1.5:.8;ctx.stroke();
+  });
+}
+
+function drawStelliumHighlights(transit){
+  const allP=PORDER.filter(p=>p!=='Maan');
+  const signs={};
+  allP.forEach(p=>{const s=Math.floor(transit[p].lon/30);if(!signs[s])signs[s]=[];signs[s].push(p);});
+  Object.entries(signs).forEach(([si,ps])=>{
+    if(ps.length<3)return;
+    const a1=la(parseInt(si)*30+2),a2=la((parseInt(si)+1)*30-2);
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,RI-2,a1,a2,false);
+    ctx.arc(cx,cy,RI-27,a2,a1,true);ctx.closePath();
+    ctx.fillStyle='rgba(240,200,60,0.18)';ctx.fill();
+    ctx.strokeStyle='rgba(240,200,60,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function drawAspectLines(aspects,natal,transit){
+  const rin=RI-31;
+  aspects.forEach(asp=>{
+    const l1=(natal&&asp.isNatal?natal[asp.p1]?.lon:transit[asp.p1]?.lon)||0;
+    const l2=transit[asp.p2]?.lon||0;
+    const a1=la(l1),a2=la(l2);
+    ctx.save();
+    ctx.globalAlpha=0.6+asp.ex*0.38;
+    const lw2=asp.a===0?2.5:asp.a===180?2.0:asp.a===120?1.5:asp.a===90?1.4:1.2;
+    ctx.strokeStyle=asp.col;ctx.lineWidth=lw2;ctx.setLineDash(asp.dash);
+    ctx.beginPath();ctx.moveTo(cx+rin*Math.cos(a1),cy+rin*Math.sin(a1));
+    ctx.lineTo(cx+rin*Math.cos(a2),cy+rin*Math.sin(a2));ctx.stroke();
+    if(asp.ex>0.75){
+      ctx.globalAlpha=(asp.ex-0.75)*0.5;ctx.lineWidth=lw2+4;
+      ctx.beginPath();ctx.moveTo(cx+rin*Math.cos(a1),cy+rin*Math.sin(a1));
+      ctx.lineTo(cx+rin*Math.cos(a2),cy+rin*Math.sin(a2));ctx.stroke();
+    }
+    ctx.restore();
+  });
+  ctx.setLineDash([]);
+}
+
+function drawPlanetAt(drawLon,actualLon,sym,col,r,isTransit){
+  const a=la(drawLon),aA=la(actualLon);
+  const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+  const sz=Math.max(9, W/56);
+
+  // Connection line to actual position tick
+  ctx.strokeStyle=col+'44';ctx.lineWidth=0.8;
+  ctx.beginPath();
+  ctx.moveTo(cx+(RI+(isTransit?2:0))*Math.cos(aA),cy+(RI+(isTransit?2:0))*Math.sin(aA));
+  ctx.lineTo(cx+(r-sz-1)*Math.cos(a),cy+(r-sz-1)*Math.sin(a));ctx.stroke();
+
+  // Halo
+  ctx.beginPath();ctx.arc(x,y,sz+2,0,Math.PI*2);
+  const _wb=getComputedStyle(document.body).getPropertyValue('--wheel-bg').trim()||'#e8e4d8';
+  ctx.fillStyle=_wb+'ee';ctx.fill();
+
+  // Circle
+  ctx.beginPath();ctx.arc(x,y,sz,0,Math.PI*2);
+  ctx.strokeStyle=col;ctx.lineWidth=isTransit?1.2:1.8;
+  if(isTransit)ctx.setLineDash([2,2]);
+  ctx.stroke();ctx.setLineDash([]);
+
+  // Symbol
+  const fSz=Math.max(10,sz*0.95);
+  ctx.font=`bold ${fSz}px serif`;ctx.fillStyle=col;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sym,x,y);
+
+  // Degree label — dark blue, readable
+  const deg=Math.floor(actualLon%30),mn=Math.floor((actualLon%1)*60);
+  const rl=r+sz+7,xl=cx+rl*Math.cos(a),yl=cy+rl*Math.sin(a);
+  ctx.save();ctx.translate(xl,yl);ctx.rotate(a+Math.PI/2);
+  const _wb2=getComputedStyle(document.body).getPropertyValue('--wheel-bg').trim()||'#e8e4d8';
+  ctx.fillStyle=_wb2+'df';ctx.fillRect(-14,-7,28,14);
+  ctx.font=`bold ${Math.max(8,sz*0.78)}px Courier New`;
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--wheel-label').trim()||'#1a2060';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(`${deg}°${mn}'`,0,0);ctx.restore();
+
+  // Tick on ring
+  ctx.strokeStyle=col;ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx+(RI-1)*Math.cos(aA),cy+(RI-1)*Math.sin(aA));
+  ctx.lineTo(cx+(RI+6)*Math.cos(aA),cy+(RI+6)*Math.sin(aA));ctx.stroke();
+}
+
+function drawCenter(sym,col){
+  ctx.beginPath();ctx.arc(cx,cy,RC+3,0,Math.PI*2);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--wheel-center-bg').trim()||'#e8e4d8';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,RC,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+  ctx.font=`bold ${sym.length>1?RC*0.55:RC*0.7}px Georgia`;
+  ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sym,cx,cy);
+}
+
+function draw(){
+  if(!W)return;
+  ctx.clearRect(0,0,W,H);
+  const p=PRESETS[curPreset];
+  const natal=p.natalJD?calcAll(p.natalJD):null;
+  const transit=calcAll(TODAY_JD+offsetDays);
+
+  drawBG();drawZodiac();
+  drawStelliumHighlights(transit);
+
+  const aspects=findAspects(natal,transit);
+  drawAspectLines(aspects,natal,transit);
+
+  if(natal){
+    const ns=spreadPlanets(PORDER.map(n=>({name:n,lon:natal[n].lon})),13);
+    ns.forEach(p=>drawPlanetAt(p.draw,p.lon,PSYM[p.name],PCOL[p.name],RN,false));
+  }
+  const ts=spreadPlanets(PORDER.map(n=>({name:n,lon:transit[n].lon})),13);
+  ts.forEach(p=>drawPlanetAt(p.draw,p.lon,PSYM[p.name],PCOL[p.name],RT,true));
+
+  drawCenter(p.center,p.col);
+}
+
+
+
+// ── UI ────────────────────────────────────────────────────────────────────────
+function onSlider(val,fromAnim=false){
+  offsetDays=parseInt(val);
+  if(!fromAnim)animOffset=0;
+  updateDateDisplay();
+  draw();buildSidebar();
+}
+function jumpDays(d){
+  offsetDays=d;animOffset=0;
+  document.getElementById('timeSlider').value=d;
+  updateDateDisplay();draw();buildSidebar();
+}
+function stepDay(delta){
+  offsetDays=Math.max(-365,Math.min(365,offsetDays+delta));
+  document.getElementById('timeSlider').value=offsetDays;
+  updateDateDisplay();draw();buildSidebar();
+}
+function stepDay(delta){
+  offsetDays=Math.max(-365,Math.min(365,offsetDays+delta));
+  document.getElementById('timeSlider').value=offsetDays;
+  updateDateDisplay();draw();buildSidebar();
+}
+function updateDateDisplay(){
+  const jd=TODAY_JD+offsetDays;
+  const d=new Date((jd-2440587.5)*86400000);
+  document.getElementById('dateDisplay').textContent=d.toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  const off=offsetDays;
+  document.getElementById('dateOffset').textContent=off===0?'Vandaag':off>0?`+${off}d (toekomst)`:`${off}d (verleden)`;
+}
+function setPreset(key){
+  curPreset=key;
+  const sel=document.getElementById('presetSel');
+  if(sel&&sel.value!==key)sel.value=key;
+  draw();buildSidebar();
+}
+function setTheme(t){
+  const themes=['klassiek','modern','dark','night','light'];
+  themes.forEach(th=>document.body.classList.remove('theme-'+th));
+  if(t!=='klassiek')document.body.classList.add('theme-'+t);
+  document.querySelectorAll('[id^="th_"]').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('th_'+t);if(btn)btn.classList.add('active');
+  // Topbar/panels ook updaten
+  document.getElementById('topbar').style.background='';
+  document.getElementById('rightPanel').style.background='';
+  draw();
+}
+
+function setOrb(school){
+  currentOrbSchool=school;
+  document.querySelectorAll('.orbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('orb_'+school).classList.add('active');
+  draw();buildSidebar();
+}
+function showTab(id){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabs=['tab-pos','tab-asp','tab-events','tab-pieken','tab-uitleg'];
+  document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  if(id==='tab-pieken')scanPeaks(currentScanDays);
+  if(id==='tab-events')buildTimeline();
+}
+
+// ── Sidebar builders ──────────────────────────────────────────────────────────
+function buildSidebar(){
+  const p=PRESETS[curPreset];
+  const natal=p.natalJD?calcAll(p.natalJD):null;
+  const transit=calcAll(TODAY_JD+offsetDays);
+
+  // Posities
+  const tbl=document.getElementById('ptable');tbl.innerHTML='';
+  if(natal){
+    const hdr=document.createElement('div');
+    hdr.style.cssText='display:grid;grid-template-columns:22px 1fr 1fr;font-size:14px;color:#3a4268;padding:2px 0 5px;border-bottom:1px solid var(--border);margin-bottom:3px;font-family:Courier New,monospace;';
+    hdr.innerHTML='<span></span><span>NATAL</span><span>TRANSIT</span>';
+    tbl.appendChild(hdr);
+    PORDER.forEach(n=>{
+      const nd=natal[n],td=transit[n];
+      const row=document.createElement('div');row.className='pr';
+      row.innerHTML=`<span class="psym" style="color:${PCOL[n]}">${PSYM[n]}</span>
+        <div><span class="pval" style="color:${PCOL[n]}">${nd.deg}°${nd.min}'</span><span class="psign" style="color:${PCOL[n]}">${nd.sign}</span></div>
+        <div><span class="pval" style="color:${PCOL[n]}99;font-size:19px">${td.deg}°${td.min}'</span><span class="psign">${td.sign}</span></div>`;
+      tbl.appendChild(row);
+    });
+  } else {
+    PORDER.forEach(n=>{
+      const d=transit[n];
+      const row=document.createElement('div');row.className='pr';
+      row.innerHTML=`<span class="psym" style="color:${PCOL[n]}">${PSYM[n]}</span>
+        <div><span class="pval" style="color:${PCOL[n]}">${d.deg}°${d.min}'</span><span class="psign" style="color:${PCOL[n]}">${d.sign}</span></div>
+        <div style="font-size:14px;color:#3a4268;">${n}</div>`;
+      tbl.appendChild(row);
+    });
+  }
+
+  // Aspecten
+  const aspList=document.getElementById('asplist');aspList.innerHTML='';
+  const aspects=findAspects(natal,transit).slice(0,8);
+  if(aspects.length){
+    aspects.forEach(asp=>{
+      const row=document.createElement('div');row.className='ar';
+      row.innerHTML=`<div class="adot" style="background:${asp.col}"></div>
+        <span class="asym" style="color:${asp.col}">${asp.sym}</span>
+        <div>
+          <div class="aname" style="color:${asp.col}">${PSYM[asp.p1]} ${asp.name} ${PSYM[asp.p2]}</div>
+          <div class="adesc">${asp.p1}${asp.isNatal?' natal':''} → ${asp.p2} · orb ${asp.orb}° · exactheid ${Math.round(asp.ex*100)}%</div>
+        </div>`;
+      aspList.appendChild(row);
+    });
+  } else {
+    aspList.innerHTML=`<div style="font-size:14px;color:var(--muted);padding:4px 0;">Geen aspecten binnen orb (${ORB_SCHOOLS[currentOrbSchool].label}).</div>`;
+  }
+
+  // Bevindingen
+  buildFindings(natal,transit);
+}
+
+// ── Interpretatie-engine (Crypto Damus stijl) ────────────────────────────────
+
+// Planeet karakter (kort)
+const P_CHAR={
+  Zon:'vitaliteit & ego', Maan:'publiek sentiment & emotie',
+  Mercurius:'handel & communicatie', Venus:'waarde, liefde & esthetiek',
+  Mars:'actie, energie & conflict', Jupiter:'expansie, geluk & groei',
+  Saturnus:'structuur, begrenzing & discipline', Uranus:'disruptie & innovatie',
+  Neptunus:'illusie, idealen & oplossing'
+};
+
+// Teken karakter (voor markt)
+const S_CHAR={
+  Ram:'pionier, impulsief — snel herstel/uitbraak',
+  Stier:'stabiel, materieel — waardebehoud, goud/vastgoed',
+  Tweelingen:'dubbel, communicatief — volatiel, info-sector',
+  Kreeft:'emotioneel, beschermend — defensief, voedsel/zorg',
+  Leeuw:'royaal, creatief — speculatie, entertainment, luxe',
+  Maagd:'analytisch, precies — gezondheid, efficiëntie, detail',
+  Weegschaal:'balans, recht — financiële balans, diplomatiek',
+  Schorpioen:'intens, transformatief — crypto, occult kapitaal, fusies',
+  Boogschutter:'avontuurlijk, internationaal — commodities, reizen, filosofie',
+  Steenbok:'ambitieus, gedisciplineerd — indices, overheden, goud',
+  Waterman:'innovatief, humanistisch — tech, crypto, disruptie',
+  Vissen:'intuïtief, spiritueel — sentiment-gedreven, olie, illusie'
+};
+
+// Verheffing (exaltation) — versterkt planeet-effect
+const EXALTATION={Zon:'Ram',Maan:'Stier',Mercurius:'Maagd',Venus:'Vissen',
+  Mars:'Steenbok',Jupiter:'Kreeft',Saturnus:'Weegschaal',
+  Uranus:'Schorpioen',Neptunus:'Kreeft'};
+
+// Aspect-toon per combinatie (zoals Crypto Damus redeneerde)
+function getAspectTone(p1,p2,angle){
+  const bullish=['Jupiter','Venus','Zon'];
+  const bearish=['Saturnus','Mars','Neptunus'];
+  const isHarmonious=angle===0||angle===120||angle===60;
+  const p1Bull=bullish.includes(p1),p2Bull=bullish.includes(p2);
+  const p1Bear=bearish.includes(p1),p2Bear=bearish.includes(p2);
+  if(isHarmonious&&(p1Bull||p2Bull)&&!p1Bear&&!p2Bear)return'bullish';
+  if(!isHarmonious&&(p1Bear||p2Bear))return'bearish';
+  if(isHarmonious&&p1Bear&&p2Bear)return'bearish'; // twee slechte planeten harmonieus = bearish
+  if(!isHarmonious&&p1Bull&&p2Bull)return'caution'; // twee goede planeten in spanning
+  return'neutraal';
+}
+
+function toneToEmoji(tone){
+  return tone==='bullish'?'🟢':tone==='bearish'?'🔴':tone==='caution'?'🟡':'⚪';
+}
+function toneToLabel(tone){
+  return tone==='bullish'?'BULLISH':tone==='bearish'?'BEARISH':tone==='caution'?'OPGELET':'NEUTRAAL';
+}
+function toneToCol(tone){
+  return tone==='bullish'?'#3ec87a':tone==='bearish'?'#e8556a':tone==='caution'?'#f7a030':'#5b8af5';
+}
+
+// Markt-interpretatie per aspect-combinatie
+function getMarketMeaning(p1,p2,angle,sign1,sign2){
+  const exalt1=EXALTATION[p1]===sign1?` (verheven in ${sign1} — versterkt effect!)`:'';
+  const exalt2=EXALTATION[p2]===sign2?` (verheven in ${sign2} — versterkt effect!)`:'';
+  const aspName=angle===0?'conjunctie':angle===180?'oppositie':angle===120?'trine':angle===90?'vierkant':'sextiel';
+  const sc2=S_CHAR[sign2]||sign2;
+
+  // Specifieke combinaties (high-value interpretaties)
+  const key=`${p1}_${p2}_${angle}`;
+  const SPECIFIC={
+    // ── Venus combinaties ──────────────────────────────────────────────────
+    'Venus_Jupiter_0':   `Venus-Jupiter conjunctie — de klassieke "bullish double". Venus (waarde) + Jupiter (groei) op dezelfde graad. Historisch een van de sterkste bullish factoren. In ${sign2}${exalt2}: ${sc2}. Goud, luxe en risico-assets profiteren.`,
+    'Venus_Jupiter_120': `Venus trine Jupiter — vloeiende groei-energie. Waarde stroomt makkelijk naar expansie. Bullish voor aandelen, crypto en goud. Weinig wrijving.`,
+    'Venus_Jupiter_60':  `Venus sextiel Jupiter — lichte bullish kans. Stimulerende maar geen overweldigende kracht. Gunstig voor value-assets en grondstoffen.`,
+    'Venus_Jupiter_90':  `Venus vierkant Jupiter — groeiverwachtingen te hoog? Waardering onder druk. Kan leiden tot overdrijving en correctie. Let op FOMO-momenten.`,
+    'Venus_Jupiter_180': `Venus oppositie Jupiter — spanning tussen waarde en overmoed. Markten kunnen tijdelijk overgewaardeerd raken. Correctierisico aanwezig.`,
+    'Venus_Mars_0':      `Venus conjunct Mars — waarde en actie samen. Krachtige opwaartse impuls, maar ook emotioneel geladen. Scherpe bewegingen beide kanten. Crypto en groei-assets meest gevoelig.`,
+    'Venus_Mars_90':     `Venus vierkant Mars — wrijving tussen waarde en actie. Volatiliteit, mogelijke scherpe dalingen gevolgd door herstel. Niet de tijd voor grote posities.`,
+    'Venus_Mars_120':    `Venus trine Mars — waarde en actie in harmonie. Momentum zonder overmatige spanning. Bullish voor risico-assets en tech.`,
+    'Venus_Saturnus_90': `Venus vierkant Saturnus — waarde onder druk van begrenzing en discipline. Crypto Damus' "sell-off signaal nr. 1". Tijdelijk bearish, met name voor luxe en risico-assets.`,
+    'Venus_Saturnus_180':`Venus oppositie Saturnus — waardering tegenover realiteit. Markt moet krimpen naar fundamentele waarde. Bearish voor speculatieve assets.`,
+    'Venus_Saturnus_0':  `Venus conjunct Saturnus — waarde beperkt door structuur. Gedempt marktsentiment. Niet ideaal voor risico. Defensieve assets (obligaties, goud) doen het relatief beter.`,
+    'Venus_Uranus_0':    `Venus conjunct Uranus — plotselinge waardeschommelingen. Disruptieve prijsbewegingen, onverwachte kansen. Crypto en tech meest gevoelig voor plotse sprongen.`,
+    'Venus_Uranus_90':   `Venus vierkant Uranus — onverwachte marktverstoring. Flash crashes of gap-ups mogelijk. Hoge volatiliteit, moeilijk te timen.`,
+    'Venus_Neptunus_0':  `Venus conjunct Neptunus — sentiment gedreven door illusie. Overwaardering mogelijk. Sentiment-gedreven rally's die plots omkeren. Let op hype-sectoren.`,
+    'Venus_Neptunus_90': `Venus vierkant Neptunus — verwarring over waarde. Moeilijk de echte prijs te bepalen. Vermijd onduidelijke projecten. Deflatoire verrassing mogelijk.`,
+    // ── Mars combinaties ───────────────────────────────────────────────────
+    'Mars_Jupiter_0':    `Mars conjunct Jupiter — energie + groei = explosief momentum. Snelle, expansieve bewegingen. Let op overdrijving en scherpe correctie achteraf. Beste entry vóór exacte conjunctie.`,
+    'Mars_Jupiter_120':  `Mars trine Jupiter — krachtig maar gecontroleerd. Actie en groei vloeien samen. Bullish voor cyclische sectoren en risico-assets.`,
+    'Mars_Jupiter_90':   `Mars vierkant Jupiter — overenthousiasme leidt tot te ver doorschieten. Bullish impuls maar correctierisico sterk aanwezig na exacte graad.`,
+    'Mars_Saturnus_0':   `Mars conjunct Saturnus — actie geblokkeerd door begrenzing. Klassiek bearish signaal. Frustratie in de markt, vertraagde bewegingen. Bearish voor momentum-assets.`,
+    'Mars_Saturnus_90':  `Mars vierkant Saturnus — de klassieke "brick wall". Elke opwaartse poging stuit op weerstand. Bearish, aangehouden druk.`,
+    'Mars_Saturnus_180': `Mars oppositie Saturnus — directe botsing energie vs. structuur. Sterk bearish signaal voor korte termijn. Paniek-verkopen mogelijk.`,
+    'Mars_Uranus_0':     `Mars conjunct Uranus — explosieve, onvoorspelbare beweging. Flash crash of plotse breakout. Disruptieve energie. Crypto en kleine caps meest gevoelig.`,
+    'Mars_Uranus_90':    `Mars vierkant Uranus — onverwachte schok. Accidents happen. Geopolitiek risico, plotse marktbewegingen. Hoge waakzaamheid geboden.`,
+    'Mars_Neptunus_0':   `Mars conjunct Neptunus — actie vervaagt in illusie. Richtingsloze markt, hype zonder fundament. Vermijd leverage. Sentiment-gedreven.`,
+    'Maan_Mars_180':     `Maan oppositie Mars — publiek sentiment staat tegenover actie-energie. Crypto Damus' "sell-off factor nr. 2". Emotionele verkoopgolf mogelijk, met name bij retail-gedreven assets.`,
+    'Maan_Mars_90':      `Maan vierkant Mars — emotionele impulsiviteit in de markt. Overreacties op nieuws. Verhoogde short-termijn volatiliteit.`,
+    'Maan_Jupiter_0':    `Maan conjunct Jupiter — publiek sentiment overoptimistisch. Korte termijn bullish rally mogelijk, maar emotioneel gedreven. Let op overshoot.`,
+    'Maan_Saturnus_90':  `Maan vierkant Saturnus — gedrukt publiek sentiment. Defensieve markthouding. Risk-off moment.`,
+    // ── Jupiter combinaties ────────────────────────────────────────────────
+    'Jupiter_Saturnus_0':`Jupiter-Saturnus conjunctie (Great Conjunction, ~20 jaar) — economisch tijdperk-reset. Initieel bearish, daarna langdurig bullish nieuwe cyclus. Historisch: 2000 (dot-com top), 2020 (COVID reset). Markeert begin van nieuw decennium-thema.`,
+    'Jupiter_Uranus_0':  `Jupiter conjunct Uranus — explosieve innovatie-energie. Historisch verbonden met technologische doorbraken en scherpe marktsprongen. AI, crypto, disruptieve sectoren. Vorige: 2011 (tech boom), 1969 (maanlanding).`,
+    'Jupiter_Uranus_120':`Jupiter trine Uranus — vloeiende innovatie. Technologische groei zonder verstoring. Bullish voor tech en crypto op middellange termijn.`,
+    'Jupiter_Neptunus_0':`Jupiter conjunct Neptunus (eens per ~13 jaar) — grenzeloze optimisme. Idealen worden als realiteit gezien. Historisch verbonden met bubbels (2022 crypto top). Voorzichtigheid bij extreme euforie.`,
+    'Jupiter_Neptunus_120':`Jupiter trine Neptunus — inspirerende groei, spirituele economie. Gunstig voor sentiment-gedreven assets, maar let op fundamenten.`,
+    'Jupiter_Pluto_0':   `Jupiter conjunct Pluto — transformatieve macht + groei. Grote rijkdomsverschuivingen, machtsconcentratie. Historisch bij grote markt-tops én bodems (2020 COVID bodem).`,
+    // ── Saturnus combinaties ───────────────────────────────────────────────
+    'Saturnus_Neptunus_0':`Saturnus-Neptunus conjunctie (generationeel, ~36 jaar) — oude monetaire structuren lossen op, nieuwe idealistische systemen vormen zich. Nu actief. Historisch: monetaire transities, bretton woods, crypto-adoptie. Diepgaand structureel veranderingsmoment.`,
+    'Saturnus_Uranus_90':`Saturnus vierkant Uranus — structuur vs. disruptie. Crypto Damus noemde dit als achtergrond-thema van 2021-2022. Bestaande systemen weerstaan verandering. Botsing traditioneel finance vs. crypto/tech.`,
+    'Saturnus_Uranus_0': `Saturnus conjunct Uranus — structuur en disruptie fuseren. Nieuwe orde sluit aan op innovatie. Langzaam transitie-moment. Blockchain-regulering, crypto ETFs als voorbeeld.`,
+    'Saturnus_Pluto_0':  `Saturnus conjunct Pluto (zeldzaam) — harde macht-reset. Historisch bij crises: 9/11 context (2001), COVID (2020). Bearish op korte termijn, transformatief op lange termijn.`,
+    // ── Uranus/Neptunus ────────────────────────────────────────────────────
+    'Uranus_Neptunus_0': `Uranus conjunct Neptunus (eens per ~170 jaar) — generatie-definiërend aspect. Technologie ontmoet spiritualiteit/illusie. 1993: internet-opkomst. Fundamentele paradigmaverschuiving.`,
+    'Uranus_Pluto_90':   `Uranus vierkant Pluto — revolutionaire energie vs. transformerende macht. 2012-2015 actief: Arabische Lente, Occupy, crypto start. Sociale en economische omwenteling.`,
+    // ── Zon combinaties ────────────────────────────────────────────────────
+    'Zon_Jupiter_0':     `Zon conjunct Jupiter — vitaliteit + expansie. Optimistisch marktmoment. Tijdelijk bullish signaal, met name voor de dag zelf. Goed voor risico-assets.`,
+    'Zon_Saturnus_90':   `Zon vierkant Saturnus — persoonlijke kracht beperkt. Tegenvallend nieuws, rem op enthousiasme. Korte termijn bearish, met name voor indices.`,
+    'Zon_Mars_0':        `Zon conjunct Mars — krachtige actie-energie. Momentum-moment. Bullish impuls maar ook risico op overshooting en scherpe ommekeer.`,
+    'Zon_Uranus_0':      `Zon conjunct Uranus — plotse verandering in marktleiderschap. Verrassingsfactor hoog. Nieuwe thema's breken door. Volatiliteit.`,
+  };
+  if(SPECIFIC[key])return SPECIFIC[key];
+
+  // Generieke interpretatie
+  const tone=getAspectTone(p1,p2,angle);
+  return `${p1} (${P_CHAR[p1]}) in ${aspName} met ${p2} (${P_CHAR[p2]})${exalt1}${exalt2}. `+
+    `${p2} staat in ${sign2} — ${sc2}. `+
+    (tone==='bullish'?`Dit is een <b>ondersteunend aspect</b> voor de markt.`:
+     tone==='bearish'?`Dit is een <b>uitdagend aspect</b> dat neerwaartse druk kan geven.`:
+     tone==='caution'?`Twee sterke krachten in spanning — verwacht verhoogde volatiliteit.`:
+     `Neutraal achtergrond-aspect.`);
+}
+
+// Grand Trine detector
+function detectGrandTrine(transit){
+  const planets=PORDER;
+  const trines=[];
+  for(let i=0;i<planets.length;i++){
+    for(let j=i+1;j<planets.length;j++){
+      for(let k=j+1;k<planets.length;k++){
+        const l1=transit[planets[i]].lon,l2=transit[planets[j]].lon,l3=transit[planets[k]].lon;
+        const d12=Math.abs(l1-l2)%360;const diff12=Math.min(d12,360-d12);
+        const d23=Math.abs(l2-l3)%360;const diff23=Math.min(d23,360-d23);
+        const d13=Math.abs(l1-l3)%360;const diff13=Math.min(d13,360-d13);
+        const orb=8;
+        if(Math.abs(diff12-120)<orb&&Math.abs(diff23-120)<orb&&Math.abs(diff13-120)<orb){
+          trines.push({p1:planets[i],p2:planets[j],p3:planets[k],
+            avg:(Math.abs(diff12-120)+Math.abs(diff23-120)+Math.abs(diff13-120))/3});
+        }
+      }
+    }
+  }
+  return trines.sort((a,b)=>a.avg-b.avg);
+}
+
+function generateSummary(findings, transit, natal){
+  const el=document.getElementById('summaryText');
+  const strip=document.getElementById('summaryStrip');
+  if(!el)return;
+
+  if(!findings.length){
+    if(strip){strip.style.background='#080a14';strip.style.borderTop='1px solid #1e2240';}
+    el.innerHTML='<span style="color:#4a5278">Geen actieve aspecten binnen huidige orb. Probeer een ruimere school.</span>';
+    return;
+  }
+
+  const bullish=findings.filter(f=>f.badge&&(f.badge.includes('BULLISH')||f.badge.includes('GRAND TRINE')));
+  const bearish=findings.filter(f=>f.badge&&f.badge.includes('BEARISH'));
+  const hasGT=findings.some(f=>f.title&&f.title.includes('Grand Trine'));
+  const hasStell=findings.some(f=>f.badge&&f.badge.includes('STELLIUM'));
+  const score=bullish.length-bearish.length;
+
+  let toonTxt,toonCol,bgCol,emoji;
+  if(hasGT||score>=2){
+    toonTxt='OVERWEGEND BULLISH';toonCol='#3ec87a';bgCol='rgba(62,200,122,0.12)';emoji='🟢';
+  } else if(score<=-2){
+    toonTxt='OVERWEGEND BEARISH';toonCol='#e8556a';bgCol='rgba(232,85,106,0.12)';emoji='🔴';
+  } else if(bearish.length>0&&bullish.length>0){
+    toonTxt='GEMENGD';toonCol='#f7a030';bgCol='rgba(247,160,48,0.10)';emoji='🟡';
+  } else if(bullish.length>0){
+    toonTxt='LICHT BULLISH';toonCol='#3ec87a';bgCol='rgba(62,200,122,0.07)';emoji='🟢';
+  } else {
+    toonTxt='NEUTRAAL';toonCol='#5b8af5';bgCol='rgba(91,138,245,0.08)';emoji='⚪';
+  }
+
+  // Kleur de strip
+  if(strip){
+    strip.style.background=bgCol;
+    strip.style.borderTop=`1px solid ${toonCol}44`;
+    strip.style.boxShadow=`inset 0 1px 0 ${toonCol}33`;
+  }
+
+  const p=PRESETS[curPreset];
+  const presetLabel=p.label.split('·')[0].trim();
+  const dateLabel=document.getElementById('dateDisplay').textContent;
+
+  let html=`<b style="color:${toonCol};font-size:19px;">${emoji} ${presetLabel}</b>`
+    +`<span style="color:var(--muted);"> · ${dateLabel} · </span>`
+    +`<b style="color:${toonCol};">${toonTxt}</b>`;
+
+  if(hasGT){
+    const gt=findings.find(f=>f.title&&f.title.includes('Grand Trine'));
+    const planets=gt?gt.title.replace(/[🟢🔴🟡⚪]/g,'').replace('Grand Trine:','').trim():'';
+    html+=` &nbsp;—&nbsp; <span style="color:#3ec87a;">⚡ Grand Trine</span> (${planets})`;
+  }
+  if(hasStell){
+    const st=findings.find(f=>f.badge&&f.badge.includes('STELLIUM'));
+    const m=st&&st.title.match(/Stellium in (\w+)/);
+    if(m)html+=` &nbsp;·&nbsp; <span style="color:#f0c840;">Stellium ${m[1]}</span>`;
+  }
+
+  html+='<br>';
+
+  if(bullish.length){
+    const names=bullish.slice(0,2).map(f=>f.title.replace(/[🟢🔴🟡⚪]/g,'').trim());
+    html+=`<span style="color:#3ec87a;">▲ Bullish ${bullish.length}×</span> ${names.join(' · ')}`;
+  }
+  if(bearish.length){
+    const names=bearish.slice(0,1).map(f=>f.title.replace(/[🟢🔴🟡⚪]/g,'').trim());
+    html+=`${bullish.length?' &nbsp;|&nbsp; ':''}<span style="color:#e8556a;">▼ Bearish ${bearish.length}×</span> ${names.join(' · ')}`;
+  }
+
+  const advies = score>=2||hasGT
+    ? ' &nbsp;—&nbsp; <b style="color:#3ec87a;">Sterke setup voor risico-assets.</b>'
+    : score<=-2
+    ? ' &nbsp;—&nbsp; <b style="color:#e8556a;">Verkoopdruk waarschijnlijk — defensief.</b>'
+    : bearish.length&&bullish.length
+    ? ' &nbsp;—&nbsp; <span style="color:#f7a030;">Volatiliteit verwacht — wacht op bevestiging.</span>'
+    : ' &nbsp;—&nbsp; <span style="color:#5b8af5;">Geen duidelijk signaal.</span>';
+
+  el.innerHTML=html+advies;
+}
+
+function buildFindings(natal,transit){
+  const div=document.getElementById('findings');div.innerHTML='';
+  const findings=[];
+
+  // ── 1. Grand Trine detectie (hoogste prioriteit) ───────────────────────────
+  const grandTrines=detectGrandTrine(transit);
+  grandTrines.slice(0,1).forEach(gt=>{
+    const slowOuter=['Jupiter','Saturnus','Uranus','Neptunus'];
+    const isOuter=slowOuter.includes(gt.p1)&&slowOuter.includes(gt.p2)&&slowOuter.includes(gt.p3);
+    findings.push({
+      col:'#3ec87a', badge: isOuter?'GRAND TRINE — GENERATIONEEL':'GRAND TRINE',
+      title:`🟢 Grand Trine: ${gt.p1} △ ${gt.p2} △ ${gt.p3}`,
+      body: isOuter
+        ?`<b>Crypto Damus noemde dit:</b> "once in a generation outer planet minor grand trine". ${gt.p1}, ${gt.p2} en ${gt.p3} staan ~120° van elkaar — een driehoek van vloeiende energie. Dit is een van de sterkste bullish achtergrond-factoren.<br><br>
+         <b>Wat het betekent:</b> Drie planeten versterken elkaar zonder wrijving. De sectoren van elk teken worden tegelijk geactiveerd. Voor markten: brede rally mogelijk, meerdere sectoren tegelijk bullish.`
+        :`${gt.p1}, ${gt.p2} en ${gt.p3} vormen een trine-driehoek (~120°). Vloeiende, ondersteunende energie. Gunstig voor risico-assets.`
+    });
+  });
+
+  // ── 2. Stellium detectie ───────────────────────────────────────────────────
+  const allP=PORDER.filter(p=>p!=='Maan');
+  const signs={};allP.forEach(p=>{const s=Math.floor(transit[p].lon/30);if(!signs[s])signs[s]=[];signs[s].push(p);});
+  Object.entries(signs).forEach(([si,ps])=>{
+    if(ps.length<3)return;
+    const sn=ZNL[parseInt(si)];
+    const isGen=ps.includes('Saturnus')&&ps.includes('Neptunus');
+    const hasJupiter=ps.includes('Jupiter'),hasMars=ps.includes('Mars');
+    const tone=hasJupiter&&!isGen?'bullish':isGen?'caution':'neutraal';
+    findings.push({
+      col:toneToCol(tone),badge:isGen?'GENERATIONEEL STELLIUM':'STELLIUM',
+      title:`${toneToEmoji(tone)} Stellium in ${sn}: ${ps.join(', ')}`,
+      body:`<b>${ps.join(' + ')}</b> clusteren in <b>${sn}</b> (${S_CHAR[sn]||sn}).<br><br>`+
+        (isGen?`Dit generationele aspect (eens per ~36 jaar) combineert structuur (Saturnus) met idealen (Neptunus). Historisch samenvallend met monetaire verschuivingen — nu actief met Mars erbij als activator.`:
+         hasJupiter?`Jupiter aanwezig = expansieve energie in het stellium. ${sn} sectoren kunnen outperformen.`:
+         `Geconcentreerde energie in ${sn}. Let op koersbewegingen in gerelateerde sectoren.`)
+    });
+  });
+
+  // ── 3. Transit-transit aspecten (hemelstand) ──────────────────────────────
+  const ttAspects=findAspects(null,transit);
+  ttAspects.slice(0,4).forEach(h=>{
+    const tone=getAspectTone(h.p1,h.p2,h.a);
+    const meaning=getMarketMeaning(h.p1,h.p2,h.a,transit[h.p1].sign,transit[h.p2].sign);
+    const aspName=h.a===0?'conjunctie':h.a===180?'oppositie':h.a===120?'trine':h.a===90?'vierkant':'sextiel';
+    findings.push({
+      col:toneToCol(tone),badge:`${toneToLabel(tone)} · orb ${h.orb}°`,
+      title:`${toneToEmoji(tone)} ${PSYM[h.p1]} ${h.p1} ${h.sym} ${PSYM[h.p2]} ${h.p2}`,
+      body:`<b>${h.p1}</b> (${transit[h.p1].deg}° ${transit[h.p1].sign}) in ${aspName} met <b>${h.p2}</b> (${transit[h.p2].deg}° ${transit[h.p2].sign}) · exactheid ${Math.round(h.ex*100)}%<br><br>${meaning}`
+    });
+  });
+
+  // ── 4. Natal transits ─────────────────────────────────────────────────────
+  if(natal){
+    findAspects(natal,transit).slice(0,3).forEach(h=>{
+      const tone=getAspectTone(h.p2,h.p1,h.a);
+      const meaning=getMarketMeaning(h.p2,h.p1,h.a,transit[h.p2].sign,natal[h.p1].sign);
+      const aspName=h.a===0?'conjunctie':h.a===180?'oppositie':h.a===120?'trine':h.a===90?'vierkant':'sextiel';
+      findings.push({
+        col:toneToCol(tone),badge:`NATAL TRANSIT · orb ${h.orb}°`,
+        title:`${toneToEmoji(tone)} ${PSYM[h.p2]} ${h.p2} ${h.sym} natal ${PSYM[h.p1]} ${h.p1}`,
+        body:`Huidige <b>${h.p2}</b> (${transit[h.p2].deg}° ${transit[h.p2].sign}) in ${aspName} met natal <b>${h.p1}</b> (${natal[h.p1].deg}° ${natal[h.p1].sign}) · exactheid ${Math.round(h.ex*100)}%<br><br>${meaning}`
+      });
+    });
+  }
+
+  // ── Samenvatting strip updaten ─────────────────────────────────────────────
+  generateSummary(findings, transit, natal);
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  if(!findings.length){
+    div.innerHTML=`<div style="font-size:19px;color:var(--muted);padding:8px 0;">Geen actieve aspecten binnen huidige orb (${ORB_SCHOOLS[currentOrbSchool].label}).<br><br>Probeer:<br>• Een ruimere orb-school<br>• De slider naar een andere datum bewegen<br>• "Transit only" preset voor de dagelijkse hemelstand</div>`;
+    return;
+  }
+
+  // Sorteer: bullish/bearish eerst, dan neutral
+  const order={bullish:0,bearish:1,caution:2,neutraal:3};
+  // Maak overall summary
+  const bullCount=findings.filter(f=>f.badge?.includes('BULLISH')).length;
+  const bearCount=findings.filter(f=>f.badge?.includes('BEARISH')).length;
+  const summary = bullCount>bearCount
+    ? `<div style="padding:8px 10px;background:#3ec87a11;border:1px solid #3ec87a33;border-radius:5px;margin-bottom:10px;font-size:14px;"><b style="color:#3ec87a">🟢 Overwegend bullish</b> — ${bullCount} bullish vs ${bearCount} bearish signalen op deze datum.</div>`
+    : bearCount>bullCount
+    ? `<div style="padding:8px 10px;background:#e8556a11;border:1px solid #e8556a33;border-radius:5px;margin-bottom:10px;font-size:14px;"><b style="color:#e8556a">🔴 Overwegend bearish</b> — ${bearCount} bearish vs ${bullCount} bullish signalen op deze datum.</div>`
+    : `<div style="padding:8px 10px;background:#5b8af511;border:1px solid #5b8af533;border-radius:5px;margin-bottom:10px;font-size:14px;"><b style="color:#5b8af5">⚪ Gemengd</b> — ${bullCount} bullish en ${bearCount} bearish signalen op deze datum. Verhoogde volatiliteit mogelijk.</div>`;
+  div.innerHTML=summary;
+
+  findings.forEach(f=>{
+    const el=document.createElement('div');el.className='finding';
+    el.style.cssText=`border-left-color:${f.col};background:${f.col}0d;margin-bottom:8px;`;
+    el.innerHTML=`${f.badge?`<span class="badge" style="background:${f.col}22;color:${f.col};border:1px solid ${f.col}44">${f.badge}</span>`:''}
+      <div class="ftitle" style="color:${f.col}">${f.title}</div>
+      <div class="fbody">${f.body}</div>`;
+    div.appendChild(el);
+  });
+}
+
+// ── Events / Bijzonderheden ───────────────────────────────────────────────────
+const EVENT_DETAILS={
+  stellium:`<h3 style="color:#f0c840;margin-bottom:8px;">⚡ Stellium uitleg</h3>
+    <p style="font-size:19px;color:var(--muted2);line-height:1.7;">Een <b style="color:var(--text);">stellium</b> is wanneer drie of meer planeten samenkomen in hetzelfde sterrenbeeld (binnen ~30°). Dit concentreert de energie van die planeten en het betreffende teken.<br><br>
+    In financiële astrologie wordt een stellium gezien als een periode van verhoogde activiteit — positief of negatief afhankelijk van de planeten. Een stellium met Mars (actie) + Jupiter (expansie) wijst op opwaartse energie; met Saturnus (beperking) + Mars (conflict) eerder op druk.</p>`,
+  generationeel:`<h3 style="color:#f7a030;margin-bottom:8px;">🌌 Generationeel aspect uitleg</h3>
+    <p style="font-size:19px;color:var(--muted2);line-height:1.7;">De <b style="color:var(--text);">Saturnus-Neptunus conjunctie</b> vindt eens per ~36 jaar plaats. Dit aspect combineert de planeet van structuur en begrenzing (Saturnus) met de planeet van illusies, idealen en dissolving (Neptunus).<br><br>
+    <b style="color:var(--text);">Historisch patroon:</b><br>
+    • 1952–53: Aanvang koude oorlog, monetaire herstructurering<br>
+    • 1989: Val van de Berlijnse Muur, einde Sovjet-Unie, grote marktverschuiving<br>
+    • 2026: Huidig — valt samen met Bitcoin's volwassenheid en goud op record<br><br>
+    Astrologen beschouwen dit als een moment van <em>dissolving of old structures and forming new ones</em> — oude systemen lossen op, nieuwe idealistische structuren vormen zich.</p>`,
+  ingress:`<h3 style="color:#9870e8;margin-bottom:8px;">🚀 Planeet ingress uitleg</h3>
+    <p style="font-size:19px;color:var(--muted2);line-height:1.7;">Een <b style="color:var(--text);">ingress</b> is het moment dat een planeet een nieuw sterrenbeeld betreedt. Dit wordt beschouwd als een energetisch omslagpunt.<br><br>
+    <b style="color:var(--text);">Jupiter ingress Leeuw (22 juli 2026)</b><br>
+    Jupiter brengt expansie en optimisme. In Leeuw (het teken van zelfexpressie, creativiteit en royaliteit) versterkt dit thema's van leiderschap, speculatie en zichtbaarheid. Historisch zijn Jupiter-in-Leeuw perioden vaak bullish voor risico-assets.</p>`,
+};
+
+function buildTimeline(){
+  const events=scanEvents();
+  const tl=document.getElementById('eventTimeline');tl.innerHTML='';
+  if(!events.length){tl.innerHTML='<div style="font-size:14px;color:var(--muted);">Geen bijzonderheden gevonden.</div>';return;}
+  events.forEach(ev=>{
+    const el=document.createElement('div');el.className='ev';
+    const daysFrom=ev.day;
+    const dateLabel=new Date(ev.date+'T12:00:00Z').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'long'});
+    const typeColor=ev.type==='stellium'?'#f0c840':ev.type==='generationeel'?'#f7a030':ev.type==='ingress'?'#9870e8':'#4878e0';
+    el.innerHTML=`
+      <div class="ev-head">
+        <div class="ev-date">${ev.date.slice(5)}</div>
+        <span class="ev-type" style="background:${typeColor}22;color:${typeColor}">${ev.type}</span>
+        <span class="ev-arrow">▶</span>
+      </div>
+      <div class="ev-desc">${ev.desc}</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:4px;">${dateLabel} · +${daysFrom}d</div>
+      <div class="ev-detail">${ev.detail}</div>`;
+    el.onclick=()=>{
+      const isOpen=el.classList.contains('open');
+      document.querySelectorAll('.ev').forEach(e=>e.classList.remove('open'));
+      if(!isOpen)el.classList.add('open');
+    };
+    tl.appendChild(el);
+  });
+}
+
+function scanEvents(){
+  const events=[];
+  const slowP=['Jupiter','Saturnus','Uranus','Neptunus'];
+  const allP=PORDER.filter(p=>p!=='Maan');
+  for(let d=1;d<=365;d+=1){
+    const jd=TODAY_JD+d,pos=calcAll(jd),posY=calcAll(jd-1);
+    slowP.forEach(p=>{
+      const s0=Math.floor(posY[p].lon/30),s1=Math.floor(pos[p].lon/30);
+      if(s0!==s1){
+        const det=EVENT_DETAILS.ingress||'';
+        events.push({day:d,date:jdToDate(jd),type:'ingress',col:'#9870e8',weight:3,
+          desc:`${p} betreedt ${ZNL[s1]} (verlaat ${ZNL[s0]})`,
+          detail:`<h3 style="color:#9870e8;margin-bottom:8px;">🚀 ${p} ingress ${ZNL[s1]}</h3>
+            <p style="font-size:19px;color:var(--muted2);line-height:1.7;">${p} verlaat ${ZNL[s0]} en betreedt <b style="color:var(--text);">${ZNL[s1]}</b>. Planeet-ingressen markeren energetische omslagen. Langzame planeten (Jupiter, Saturnus) blijven jaren in een teken — hun ingress is een multi-jarig omslagpunt.<br><br>
+            <b style="color:var(--text);">+${d} dagen vanaf vandaag.</b></p>`
+        });
+      }
+    });
+    if(d%3===0){
+      const checked=new Set();
+      allP.forEach(p1=>{
+        const cluster=[p1];
+        allP.forEach(p2=>{if(p1===p2)return;let df=Math.abs(pos[p1].lon-pos[p2].lon)%360;if(df>180)df=360-df;if(df<12)cluster.push(p2);});
+        const key=cluster.sort().join('+');
+        if(cluster.length>=3&&!checked.has(key)){
+          checked.add(key);
+          const sn=ZNL[Math.floor(pos[p1].lon/30)];
+          const ex=events.find(e=>e.type==='stellium'&&e.desc.includes(sn)&&Math.abs(e.day-d)<25);
+          const isGen=cluster.includes('Saturnus')&&cluster.includes('Neptunus');
+          if(!ex)events.push({day:d,date:jdToDate(jd),type:isGen?'generationeel':'stellium',col:isGen?'#f7a030':'#f0c840',weight:isGen?5:4,
+            desc:`Stellium in ${sn}: ${cluster.join(' + ')}`,
+            detail:(isGen?EVENT_DETAILS.generationeel:EVENT_DETAILS.stellium)||''
+          });
+        }
+      });
+    }
+    for(let i=0;i<slowP.length;i++){for(let j=i+1;j<slowP.length;j++){
+      ASP_DEF.forEach(asp=>{
+        const tgt=(pos[slowP[i]].lon+asp.a)%360;let df=Math.abs(pos[slowP[j]].lon-tgt)%360;if(df>180)df=360-df;
+        const tgtY=(posY[slowP[i]].lon+asp.a)%360;let dfY=Math.abs(posY[slowP[j]].lon-tgtY)%360;if(dfY>180)dfY=360-dfY;
+        if(df<0.5&&dfY>df){
+          const ex=events.find(e=>e.desc.includes(slowP[i])&&e.desc.includes(slowP[j])&&Math.abs(e.day-d)<10);
+          if(!ex){
+            const isGen=slowP[i]==='Saturnus'&&slowP[j]==='Neptunus';
+            events.push({day:d,date:jdToDate(jd),type:isGen?'generationeel':'langzaam',col:isGen?'#f7a030':'#9870e8',weight:isGen?5:3,
+              desc:`${slowP[i]} ${asp.sym} ${slowP[j]} (${pos[slowP[i]].deg}° ${pos[slowP[i]].sign})`,
+              detail:isGen?EVENT_DETAILS.generationeel:`<h3 style="color:#9870e8;margin-bottom:8px;">${asp.sym} ${slowP[i]} ${asp.name} ${slowP[j]}</h3>
+                <p style="font-size:19px;color:var(--muted2);line-height:1.7;">Een exact aspect tussen twee langzame planeten is zeldzaam en kan maanden aanhouden. Dit soort aspecten bepalen de achtergrondenergie voor langere perioden.<br><br>+${d} dagen vanaf vandaag.</p>`
+            });
+          }
+        }
+      });
+    }}
+  }
+  return events.sort((a,b)=>a.day-b.day).slice(0,20);
+}
+
+function jdToDate(jd){return new Date((jd-2440587.5)*86400000).toISOString().slice(0,10);}
+
+// ── Energie-piek scanner ──────────────────────────────────────────────────────
+let currentScanDays=180;
+function scanPeaks(days){
+  currentScanDays=days;
+  ['30','90','180','365'].forEach(d=>{
+    const b=document.getElementById('scan'+d);
+    if(b){const on=parseInt(d)===days;b.style.color=on?'#e8d090':'';b.style.borderColor=on?'#e8d09066':'';}
+  });
+  const peakOrb=parseFloat(document.getElementById('peakOrbSel').value||1);
+  const minAsp=parseInt(document.getElementById('minAspects').value||3);
+  const p=PRESETS[curPreset];
+  const natal=p.natalJD?calcAll(p.natalJD):null;
+  const peaks=[];
+  for(let d=0;d<=days;d++){
+    const jd=TODAY_JD+d,transit=calcAll(jd);
+    const base=natal||transit;
+    const hits=[];
+    Object.entries(base).forEach(([n1,p1])=>{
+      Object.entries(transit).forEach(([n2,p2])=>{
+        if(!natal&&n1>=n2)return;if(natal&&n1===n2)return;
+        ASP_DEF.forEach(asp=>{
+          const tgt=(p1.lon+asp.a)%360;let df=Math.abs(p2.lon-tgt)%360;if(df>180)df=360-df;
+          if(df>peakOrb)return;
+          hits.push({...asp,p1:n1,p2:n2,orb:df.toFixed(2),exactness:1-df/peakOrb,isNatal:!!natal});
+        });
+      });
+    });
+    if(hits.length<minAsp)continue;
+    const score=hits.reduce((s,h)=>s+h.exactness,0);
+    const ex=peaks.find(pk=>Math.abs(pk.day-d)<3&&pk.hits.map(h=>h.p1+h.p2).sort().join()===hits.map(h=>h.p1+h.p2).sort().join());
+    if(ex){if(score>ex.score){ex.score=score;ex.day=d;ex.hits=hits;}}
+    else peaks.push({day:d,date:jdToDate(TODAY_JD+d),score,hits,jd});
+  }
+  peaks.sort((a,b)=>b.score-a.score);
+  const maxScore=peaks[0]?.score||1;
+  document.getElementById('peakExplain').textContent=`${peaks.length} pieken gevonden · orb ${peakOrb}° · min ${minAsp} aspecten · klik om naar datum te springen`;
+  const list=document.getElementById('peakList');list.innerHTML='';
+  peaks.slice(0,15).forEach((pk,i)=>{
+    const row=document.createElement('div');row.className='peak-row';
+    const barW=Math.round((pk.score/maxScore)*100);
+    const dl=new Date(pk.date+'T12:00:00Z').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});
+    row.innerHTML=`
+      <div class="peak-score">${pk.hits.length}</div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:14px;font-weight:700;color:var(--accent);font-family:'Courier New',monospace;">${pk.date.slice(5)}</span>
+          ${i===0?'<span style="font-size:14px;color:#f7a030;">★ sterkste</span>':''}
+          <span style="font-size:14px;color:var(--muted);margin-left:auto;">+${pk.day}d</span>
+        </div>
+        <div style="font-size:19px;color:var(--text);margin:2px 0;">${dl}</div>
+        <div style="font-size:14px;color:var(--muted2);">${pk.hits.map(h=>`<span style="color:${h.col}">${h.sym}</span> ${h.p1}-${h.p2}`).join(' · ')}</div>
+        <div class="peak-bar" style="width:${barW}%;margin-top:4px;"></div>
+      </div>`;
+    row.onclick=()=>jumpDays(pk.day);
+    list.appendChild(row);
+  });
+  if(!peaks.length)list.innerHTML='<div style="font-size:19px;color:var(--muted);">Geen pieken. Probeer ruimere orb.</div>';
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function closeModal(){document.getElementById('eventModal').classList.remove('open');}
+document.getElementById('eventModal').onclick=(e)=>{if(e.target===document.getElementById('eventModal'))closeModal();};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('resize',()=>{sizeCanvas();draw();});
+
+// ── Tooltip op hover ──────────────────────────────────────────────────────────
+const ASP_NAMES_NL={0:'Conjunctie (0°)',180:'Oppositie (180°)',120:'Trine (120°)',90:'Vierkant (90°)',60:'Sextiel (60°)'};
+const PLANET_NAMES_NL={
+  Zon:'Zon — energie, vitaliteit, kern',Maan:'Maan — emoties, instinct, publiek',
+  Mercurius:'Mercurius — communicatie, handel',Venus:'Venus — waarde, esthetiek, liefde',
+  Mars:'Mars — actie, energie, conflict',Jupiter:'Jupiter — expansie, groei, geluk',
+  Saturnus:'Saturnus — structuur, begrenzing, discipline',
+  Uranus:'Uranus — disruptie, innovatie, verandering',
+  Neptunus:'Neptunus — illusie, idealen, oplossing'
+};
+const SIGN_NAMES_NL={
+  Ram:'Ram ♈ — pionier, assertief',Stier:'Stier ♉ — stabiel, materiel',
+  Tweelingen:'Tweelingen ♊ — communicatief, dubbel',Kreeft:'Kreeft ♋ — emotioneel, beschermend',
+  Leeuw:'Leeuw ♌ — royaal, creatief',Maagd:'Maagd ♍ — analytisch, precies',
+  Weegschaal:'Weegschaal ♎ — evenwicht, rechtvaardig',Schorpioen:'Schorpioen ♏ — intens, transformatief',
+  Boogschutter:'Boogschutter ♐ — avontuurlijk, filosofisch',Steenbok:'Steenbok ♑ — ambitieus, gedisciplineerd',
+  Waterman:'Waterman ♒ — innovatief, humanistisch',Vissen:'Vissen ♓ — intuïtief, spiritueel'
+};
+
+cv.addEventListener('mousemove',function(e){
+  const rect=cv.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(W/rect.width);
+  const my=(e.clientY-rect.top)*(H/rect.height);
+  const tip=document.getElementById('tooltip');
+  const p=PRESETS[curPreset];
+  const natal=p.natalJD?calcAll(p.natalJD):null;
+  const transit=calcAll(TODAY_JD+offsetDays);
+
+  // Check if hovering over a planet
+  let hovered=null;
+  const allPts=[];
+  if(natal){
+    const ns=spreadPlanets(PORDER.map(n=>({name:n,lon:natal[n].lon})),13);
+    ns.forEach(pt=>allPts.push({...pt,ring:RN,isNatal:true,data:natal[pt.name]}));
+  }
+  const ts=spreadPlanets(PORDER.map(n=>({name:n,lon:transit[n].lon})),13);
+  ts.forEach(pt=>allPts.push({...pt,ring:RT,isNatal:false,data:transit[pt.name]}));
+
+  const sz=Math.max(9,W/56)+4;
+  for(const pt of allPts){
+    const a=la(pt.draw),r=pt.ring;
+    const px=cx+r*Math.cos(a),py=cy+r*Math.sin(a);
+    if(Math.hypot(mx-px,my-py)<sz){hovered=pt;break;}
+  }
+
+  if(hovered){
+    const d=hovered.data;
+    const pname=PLANET_NAMES_NL[hovered.name]||hovered.name;
+    const sname=SIGN_NAMES_NL[d.sign]||d.sign;
+    const ring=hovered.isNatal?'Natal positie':'Transit (nu)';
+    tip.innerHTML=`<b>${PSYM[hovered.name]} ${hovered.name}</b> &nbsp;<span style="color:var(--muted);">${ring}</span><br>
+      ${d.deg}°${d.min}' ${d.sign}<br>
+      <span style="color:var(--muted2);font-size:14px;">${pname}</span><br>
+      <span style="color:var(--muted2);font-size:14px;">${sname}</span>`;
+    tip.style.display='block';
+    tip.style.left=(e.clientX+14)+'px';
+    tip.style.top=(e.clientY-10)+'px';
+    cv.style.cursor='pointer';
+  } else {
+    tip.style.display='none';
+    cv.style.cursor='default';
+  }
+});
+cv.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.display='none';});
+
+sizeCanvas();
+updateDateDisplay();
+setTheme('dark');
+setOrb('gann');
+draw();
+buildSidebar();
+buildTimeline();
+</script>
+</body>
+</html>
